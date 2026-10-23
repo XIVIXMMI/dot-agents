@@ -1,4 +1,0 @@
-# SAMPLE. One component per line (path relative to repo root). Existing files are never overwritten unless --force.
-core
-stacks/swift
-workflows/tdd-pipeline

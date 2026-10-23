@@ -1,7 +1,7 @@
 # Third-party notices
 
-`grilling/` and `teach/` (including its `*-FORMAT.md` files) are adapted from
-https://github.com/mattpocock/skills (commit 49dd158, v1.3.1), licensed under MIT:
+`.claude/skills/grilling/` is adapted from https://github.com/mattpocock/skills
+(commit 49dd158, v1.3.1), licensed under MIT:
 
 ```
 MIT License
@@ -26,11 +26,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-`swiftui-pro/` is vendored from https://github.com/twostraws/swiftui-agent-skill
-(commit ce32af1, v2.0.0), MIT, Copyright (c) 2026 Paul Hudson. Full license: `swiftui-pro/LICENSE`.
-Local change: a "Micro-journal overrides" paragraph added to `SKILL.md`.
-
-`swift-concurrency-6-2/` is vendored unchanged from https://github.com/affaan-m/everything-claude-code
-(commit 90606c8, `skills/swift-concurrency-6-2`), MIT, Copyright (c) 2026 Affaan Mustafa.
-Same MIT terms as above apply; keep this notice with the file.
