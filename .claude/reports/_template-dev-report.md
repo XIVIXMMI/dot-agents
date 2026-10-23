@@ -4,6 +4,6 @@ Spec / cases / decisions: links. Branch and commit state.
 
 ## Decisions taken while coding
 ## What changed
-- `path/File.swift`: what and why.
+- `path/to/file`: what and why.
 ## Deviations from spec
 ## Not done / follow-ups
