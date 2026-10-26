@@ -17,5 +17,6 @@ Spend tokens only where they add value.
 - Read files by path and section, not whole directories; do not read the same file twice in one task.
 - Pass file paths between agents, not pasted contents. Link a decision or spec instead of repeating it.
 - Keep command output quiet (quiet flags, `tail`, summaries). Never load a raw build or test log into context; read the summary and open details only for failures.
-- Run the narrowest test that covers a change while iterating; the full suite once at the end of a feature, and do not re-run it without a code change.
+- Run the narrowest test that covers a change (see Test levels in `workflow.md`); do not re-run without a code change.
+- To see where tokens went, run `bash .claude/tools/token-report.sh` (per session and per agent, numbers only). Run it on demand, not in the background.
 - Keep specs about 150 lines, dev reports about 40, test reports about 80, decision entries about 8 lines. List failures, not passing cases.

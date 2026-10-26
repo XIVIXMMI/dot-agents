@@ -8,8 +8,10 @@ Copy `CLAUDE.md` and `.claude/` into a project (or symlink them), fill the `<pla
 CLAUDE.md                 # project context, structure, commands
 .claude/
 ├── agents/               # product-strategist, ux-designer, solution-architect, developer, tester, sec-perf-reviewer
-├── rules/                # workflow, communication (+ token economy), testing (TDD)
+├── rules/                # workflow (+ test levels), communication (+ token economy), testing (TDD), parallel-sessions, runtime-health
 ├── skills/               # new-feature, log-decision, grilling, review-claude
+├── logs/                 # run logs written by the orchestrator
+├── tools/                # token-report.sh (token use per session and agent)
 ├── docs/                 # product brief, decision log + archive, owner feedback, compact-keep
 ├── specs/  reports/      # _template-*.md files
 └── settings.json         # git-safe permissions and the compact hook

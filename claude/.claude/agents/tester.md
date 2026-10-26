@@ -45,7 +45,7 @@ You are called once or twice per feature. The first call, before the code exists
 **After `developer` is done:**
 3. Read `.claude/reports/<feature>-dev-report.md` for what changed, then the code and tests. Check the tests against the spec, not against the report; flag tests that only mirror the code and report claims the code or a test run does not support.
 4. Write the deferred cases and any the spec or tests missed. A case that fails is a bug: report it with that failing test. Follow existing test patterns. Update `<feature>-tests.md` with every case you add.
-5. Run the suite quietly using the commands in `CLAUDE.md`; read the summary, never the raw log. In a fix round run only the unit tests and related suites; run the full suite once in the last round and record the command and result path in the report.
+5. Run the tests quietly using the commands in `CLAUDE.md`; read the summary, never the raw log. Follow Test levels in `.claude/rules/workflow.md`: the feature run in round 1, only failed or touched tests in fix rounds, the whole feature set once more in the last round. Record the command and result path in the report. Do not run the full suite unless asked.
 6. Report defects; do not fix production code. Write `.claude/reports/<feature>-test-report.md` from `_template-test-report.md`, about 80 lines: results table, open defects, what was not run.
 
 ## Defect report format
