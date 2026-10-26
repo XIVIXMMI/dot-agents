@@ -31,16 +31,20 @@ Pick a short kebab-case feature name and use it for every file. Each agent ends 
 - Give it the spec paths and the case list. Pure logic: one group of cases per TDD loop (Red, Green, Refactor). Other code is built normally.
 - It writes `.claude/reports/<name>-dev-report.md` with the unit-test result. The full suite runs in step 6.
 
-## 6. Test - `tester`
-- Check the tests against the specs, write the deferred and missing edge cases and UI/end-to-end tests, run the suite, and write `.claude/reports/<name>-test-report.md`.
-- Send P0/P1 bugs back to `developer` and repeat steps 5-6 (at most 3 rounds). In fix rounds run only unit tests and related suites; run the full suite once, in the last round.
+## 6. Review - `sec-perf-reviewer` (when the change touches data, auth, notifications, export, logging, permissions, or startup)
+- Runs right after `developer` and before `tester`: it is fast, and a High finding changes the code the tests would run on. Give it the spec paths and the diff only, not `developer`'s report.
+- Send Critical/High findings to `developer` at once; the reviewer then checks the fix diff only, until nothing Critical/High is open (at most 3 rounds, counted apart from test rounds; then stop and ask the owner). Only then start step 7.
 
-## 7. Review - `sec-perf-reviewer` (when the change touches data, auth, notifications, export, logging, permissions, or startup)
-- Give it the spec paths and the diff only, not `developer`'s report. Send Critical/High findings back to `developer`, then re-test the affected suites (same 3-round limit).
+## 7. Test - `tester`
+- Check the tests against the specs, write the deferred and missing edge cases and UI/end-to-end tests, run the feature run (see Test levels in `.claude/rules/workflow.md`), and write `.claude/reports/<name>-test-report.md`.
+- Send P0/P1 bugs back to `developer` and repeat steps 5 and 7 (at most 3 rounds). Round 1 runs the whole feature set; rounds 2 and 3 rerun only failed or touched tests; the last round runs the whole set once more.
+- If a fix in this step changes code in the review scope, `sec-perf-reviewer` checks that fix diff before the last test round.
 
 ## Finish
-Release gate: build and the full suite pass, and no Critical/High finding or P0/P1 bug is open. If the gate fails, stop and ask the owner; never relax it.
+Release gate: build, unit tests and the feature's related suites pass, and no Critical/High finding or P0/P1 bug is open. If the gate fails, stop and ask the owner; never relax it.
 
-Don't trust agent-reported facts. Use tool output: read the tester's result file when no source file is newer than it, otherwise run the full suite once yourself. Compare each `files` field with `git status` and tell the owner about any mismatch.
+Don't trust agent-reported facts. Use tool output: read the tester's result file when no source file is newer than it, otherwise run the feature run once yourself. Compare each `files` field with `git status` and tell the owner about any mismatch.
+
+Before a merge into `main`, run the critical set. For several features at once, use `.claude/rules/parallel-sessions.md`.
 
 Summarize for the owner: what was built, the spec files, test results, open findings, every non-`none` `assumptions`, and anything left [Open]. The owner approves, requests changes, or rejects.

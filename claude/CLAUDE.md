@@ -26,8 +26,11 @@ Read the decision index before proposing or building anything.
 Keep output quiet; read summaries, not raw logs.
 - Build: `<command>`
 - Test, all: `<command>`
-- Test, one suite / fast loop: `<command>`
+- Test, one suite / feature run / critical set: `<commands>`
 - Lint / format: `<command>`
+
+## Limits
+- Child sessions in parallel: 2. Machine limits (RAM, cores, devices, ports): <fill in>. Hot files shared by features: <fill in later>.
 
 ## Workflow
 **IMPORTANT:** <Your definition of done, e.g. the full test suite runs once at the end of every feature; never call a feature done while tests fail.>
