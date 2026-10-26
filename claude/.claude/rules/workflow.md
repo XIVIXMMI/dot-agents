@@ -41,7 +41,7 @@ Commands live in `CLAUDE.md`. Run the narrowest level that fits.
 
 ## Parallel work and machine health
 - Child sessions, preflight, merge queue and run logs: `.claude/rules/parallel-sessions.md`.
-- The 1-hour rule, background tasks and shared resources: `.claude/rules/runtime-health.md`.
+- The time-limit rule, background tasks and shared resources: `.claude/rules/runtime-health.md`.
 
 ## File locations
 - Specs: `.claude/specs/<feature>[-tech|-tests].md` (kebab-case feature names), about 150 lines or less.

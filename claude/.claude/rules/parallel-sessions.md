@@ -1,10 +1,11 @@
 # Parallel Sessions Rules
+<!-- TEMPLATE. Values in <angle brackets> are defaults: adjust them for the project, or delete this file if you never run child sessions. -->
 
-Applies when the orchestrator starts child sessions (separate Claude sessions on separate branches). Subagents inside one session do not count as child sessions. Set the limit N in `CLAUDE.md` (default 2).
+Applies when the orchestrator starts child sessions (separate Claude sessions on separate branches). Subagents inside one session do not count as child sessions. Set the limit in `CLAUDE.md` (Limits).
 
 ## Roles
 - The orchestrator plans, assigns, merges, and talks to the owner. Child sessions build one feature each on their own branch.
-- At most N child sessions at once. Each owns its branch and, if the project needs one, its own test environment (database, port, device) so runs never collide.
+- At most <N> child sessions at once. Each owns its branch and, if the project needs one, its own test environment (database, port, device) so runs never collide.
 
 ## Decisions in a child session
 - A child settles open questions itself when the answer stays inside the feature's [Accepted] scope (its decisions and approved specs). Reversible implementation details the spec leaves open (names, helper structure, internal layout, test fixtures) are not decisions: choose, write it down, go on.
@@ -15,7 +16,7 @@ Applies when the orchestrator starts child sessions (separate Claude sessions on
 Before a child starts, it lists the files it expects to edit and the files it will own. The orchestrator checks the lists for overlap and either serializes the overlapping part or gives one session ownership; the other adds only small, separate pieces to a shared file. A child updates its list before it edits a shared file. Keep a list of "hot files" in `CLAUDE.md` once clashes show up.
 
 ## Handoff packet
-A child's dev report ends with about 8 lines: base commit, files changed, test command and result file path with the commit or code hash it ran on, delegated decisions, bugs, open questions, what is left. The orchestrator works from it and does not re-read the whole report.
+A child's dev report ends with about <8> lines: base commit, files changed, test command and result file path with the commit or code hash it ran on, delegated decisions, bugs, open questions, what is left. The orchestrator works from it and does not re-read the whole report.
 
 ## Merge queue
 - The orchestrator owns merging, one branch at a time, and settles or assigns any clash itself. Two children never fix the same shared file.
