@@ -31,6 +31,7 @@ Keep output quiet; read summaries, not raw logs.
 
 ## Limits
 - Child sessions in parallel: 2. Machine limits (RAM, cores, devices, ports): <fill in>. Hot files shared by features: <fill in later>.
+- Paths that skip test runs (optional): <e.g. docs/, site/>. Protected branch: <main>.
 
 ## Workflow
 **IMPORTANT:** <Your definition of done, e.g. the full test suite runs once at the end of every feature; never call a feature done while tests fail.>

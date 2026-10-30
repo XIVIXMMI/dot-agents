@@ -14,6 +14,7 @@
   **Handoff**
   - status: done | blocked
   - files: <paths, or none; for more than five paths give the folder and a count>
+  - git: <none | uncommitted | committed | pushed (PR link) | merged>
   - decisions_needed: <D-NNN or the question, or none>
   - assumptions: <none, or a short list of choices you made without being told>
   - blockers: <none, or IDs of open findings or bugs, or a short note>
@@ -38,6 +39,11 @@ Commands live in `CLAUDE.md`. Run the narrowest level that fits.
 - Feature run (after every feature): the whole unit test target plus the UI suites of the feature just built. `tester` runs it, then the orchestrator verifies once. In fix rounds 2 and 3 rerun only the failed or touched tests; the whole feature set runs in round 1 and once more in the last round.
 - Critical set (before a merge into `main`): a short list of the most important tests, kept in `CLAUDE.md` or a file it names.
 - Full suite: only before a release, or overnight when the machine is idle.
+- Non-code changes (optional): if `git diff --name-only <base>...HEAD` lists only the paths named under Limits in `CLAUDE.md` (for example `docs/` or `site/`), skip all test runs. A mixed diff uses the normal gates.
+
+## Delegation (optional)
+- The owner may delegate acceptance for a batch of work, in one line, until it is finished or revoked. The orchestrator may then accept decisions inside the already [Accepted] scope, mark them "Accepted (delegated)" in the run log, and list them in its final report.
+- It still stops and asks for: a new feature or a scope change; security, privacy, network access, or a new dependency; a data-model or schema change; and anything an [Accepted] decision already covers.
 
 ## Parallel work and machine health
 - Child sessions, preflight, merge queue and run logs: `.claude/rules/parallel-sessions.md`.
@@ -49,5 +55,7 @@ Commands live in `CLAUDE.md`. Run the narrowest level that fits.
 - Product docs, decisions, owner feedback: `.claude/docs/`.
 
 ## Git
-- Never commit, push, or tag unless the owner asks. One feature per branch: `feature/<name>`, `fix/<name>`.
+- Agents commit, push their own branch, and open a pull request without asking. Only the owner merges into `main`; a force push, a push to `main`, a PR merge, a tag, and a hard reset ask first (`.claude/settings.json`, `.claude/hooks/guard-main.sh`). Turn on branch protection on the Git host as the hard stop.
+- One feature per branch: `feature/<name>`, `fix/<name>`. Never commit while the checkout is on `main`.
 - Commit message: `<type>(<scope>): <summary>`, then an optional body (why). Types: feat, fix, docs, test, chore, refactor. Split a feature into a few logical commits rather than one.
+- Opening a PR needs a green feature run (see Test levels). The orchestrator checks each `git` Handoff line against `git status` and `git log` at Finish.

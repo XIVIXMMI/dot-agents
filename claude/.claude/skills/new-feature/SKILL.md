@@ -9,7 +9,7 @@ Feature request: $ARGUMENTS
 
 Before the first feature, `.claude/specs/architecture.md` must exist and be chosen by the owner. If it does not, stop and ask `solution-architect` to propose architecture options from the approved scope in `.claude/docs/product-brief.md`.
 
-Pick a short kebab-case feature name and use it for every file. Each agent ends with a `Handoff` block (see `.claude/rules/workflow.md`); read it before the next step. Stop and ask the owner if `status: blocked`, if `decisions_needed` is not `none`, or if a P0/P1 bug or Critical/High finding is still open after 3 rounds back to `developer`. Otherwise handle `blockers` by the step's own rule. Pass file paths to agents, not contents.
+Pick a short kebab-case feature name and use it for every file. Each agent ends with a `Handoff` block (see `.claude/rules/workflow.md`); read it before the next step. Stop and ask the owner if `status: blocked`, if `decisions_needed` is not `none`, or if a P0/P1 bug or Critical/High finding is still open after 3 rounds back to `developer`. Otherwise handle `blockers` by the step's own rule. Pass file paths to agents, not contents. Under a delegation (see Delegation in `.claude/rules/workflow.md`) the orchestrator may accept the owner gates inside the accepted scope and records them as "Accepted (delegated)".
 
 ## 1. Scope - `product-strategist` (only for features not already accepted in the decision log)
 - If the feature is already accepted, say so and pass its decision ID to step 2. If the request changes the agreed scope, run this step.
@@ -46,5 +46,7 @@ Release gate: build, unit tests and the feature's related suites pass, and no Cr
 Don't trust agent-reported facts. Use tool output: read the tester's result file when no source file is newer than it, otherwise run the feature run once yourself. Compare each `files` field with `git status` and tell the owner about any mismatch.
 
 Before a merge into `main`, run the critical set. For several features at once, use `.claude/rules/parallel-sessions.md`.
+
+Open a pull request for the branch; the owner merges.
 
 Summarize for the owner: what was built, the spec files, test results, open findings, every non-`none` `assumptions`, and anything left [Open]. The owner approves, requests changes, or rejects.

@@ -14,7 +14,8 @@ CLAUDE.md                 # project context, structure, commands
 ├── tools/                # token-report.sh (token use per session and agent)
 ├── docs/                 # product brief, decision log + archive, owner feedback, compact-keep
 ├── specs/  reports/      # _template-*.md files
-└── settings.json         # git-safe permissions and the compact hook
+├── hooks/                # guard-main.sh: asks before anything changes the protected branch
+└── settings.json         # agents go up to a PR, only the owner merges; compact hook
 ```
 
 Flow: the owner decides, agents recommend with trade-offs. `/new-feature` runs scope, UX, architecture, test design, build (TDD), test, review, with owner gates. Every agent ends with a `Handoff` block. Token economy is a rule (`rules/communication.md`).
