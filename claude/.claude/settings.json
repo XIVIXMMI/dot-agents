@@ -6,20 +6,40 @@
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git switch:*)",
+      "Bash(git stash:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr diff:*)"
     ],
     "ask": [
-      "Bash(git push:*)",
-      "Bash(git tag:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(git commit:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push * main)",
+      "Bash(git push * main *)",
       "Bash(git merge:*)",
       "Bash(git rebase:*)",
+      "Bash(git tag:*)",
+      "Bash(git reset --hard:*)",
       "Bash(git clean:*)",
       "Bash(git checkout --:*)",
+      "Bash(git checkout -f*)",
+      "Bash(git switch -f*)",
       "Bash(git branch -D:*)",
+      "Bash(gh pr merge:*)",
       "Edit(.claude/settings.json)",
-      "Write(.claude/settings.json)"
+      "Write(.claude/settings.json)",
+      "Edit(.claude/hooks/**)",
+      "Write(.claude/hooks/**)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -36,6 +56,17 @@
           {
             "type": "command",
             "command": "cat \"$CLAUDE_PROJECT_DIR/.claude/docs/compact-keep.md\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-main.sh\""
           }
         ]
       }

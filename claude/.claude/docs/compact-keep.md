@@ -4,7 +4,7 @@ If anything below is missing from your summary, restore it. Details live in file
 
 ## Owner rules
 - Reply language and tone: see CLAUDE.md (Owner). The owner decides; every proposal states trade-offs.
-- Commit, push, PR only when asked. Commit format `<type>(<scope>): <summary>`. No emoji anywhere.
+- Agents commit, push their branch, and open PRs; only the owner merges into main. Commit format `<type>(<scope>): <summary>`. No emoji anywhere.
 - End every agent response with the `Handoff` block (.claude/rules/workflow.md).
 - Never weaken a failing test; ask the owner.
 - Save tokens: quiet command output, narrow test runs, no re-reading loaded files (.claude/rules/communication.md).
