@@ -1,6 +1,6 @@
 # Third-party notices
 
-`.claude/skills/grilling/` is adapted from https://github.com/mattpocock/skills
+`core/skills/grilling/` is adapted from https://github.com/mattpocock/skills
 (commit 49dd158, v1.3.1), licensed under MIT:
 
 ```

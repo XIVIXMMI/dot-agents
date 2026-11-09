@@ -1,0 +1,29 @@
+# Copy to .github/workflows/rtm.yml and fill the two <...> lines from the Stack section of AGENTS.md.
+# Setup once (private repo):
+#   1. Google Cloud: create a service account, enable the Google Sheets API, download its JSON key.
+#   2. Share the Google Sheet with the service account's email as Editor.
+#   3. GitHub repo settings: secret RTM_SA_KEY_JSON = the key's JSON text; variable RTM_SHEET_ID = the sheet ID
+#      (the part between /d/ and /edit in the sheet URL).
+name: rtm
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  rtm:
+    runs-on: ubuntu-latest   # swift-ios needs macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Tests may fail; the RTM is still built so the sheet shows which requirements fail.
+      - name: Test
+        run: <test command that writes JUnit XML>
+        continue-on-error: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install gspread
+      - name: RTM to Google Sheet
+        run: python3 .agents/tools/rtm.py --junit '<JUnit XML glob>' --sheet "$RTM_SHEET_ID"
+        env:
+          RTM_SHEET_ID: ${{ vars.RTM_SHEET_ID }}
+          RTM_SA_KEY_JSON: ${{ secrets.RTM_SA_KEY_JSON }}
