@@ -14,7 +14,7 @@ core/                 # tool- and stack-neutral: the workflow itself
 ├── tools/rtm.py      # requirement traceability matrix (RTM) builder
 └── ci/rtm.yml        # GitHub Action: tests -> RTM -> Google Sheet
 stacks/<stack>/stack.md   # commands, JUnit XML output, test naming per stack
-adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json; Codex: notes)
+adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json, guard-main hook; Codex: notes)
 install.py                # puts it all into a project; safe to rerun
 tests/                    # python3 -m unittest discover tests
 ```
@@ -32,7 +32,7 @@ The project gets:
 | `AGENTS.md` | template + stack section + generated rules block | your text kept, rules block refreshed |
 | `.agents/rules, docs, specs, reports, logs` | project-owned | copied only if missing |
 | `.agents/skills, agents, tools, ci` | owned by dot-agents | replaced |
-| `CLAUDE.md`, `.claude/settings.json` | `@AGENTS.md` + Claude notes, permissions | copied only if missing |
+| `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main hook | copied only if missing |
 | `.claude/skills` | symlink to `.agents/skills` | kept |
 | `.claude/agents/*.md`, `.codex/agents/*.toml` | rendered from `.agents/agents/` | replaced |
 

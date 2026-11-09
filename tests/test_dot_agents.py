@@ -83,6 +83,7 @@ class InstallTest(unittest.TestCase):
         self.assertIn("## Testing Rules", agents_md)
         self.assertEqual((target / ".agents" / "docs" / "product-brief.md").read_text(), "owner edit")
         self.assertTrue((target / ".claude" / "skills").is_symlink())
+        self.assertTrue((target / ".claude" / "hooks" / "guard-main.sh").exists())
         self.assertTrue((target / ".claude" / "skills" / "new-feature" / "SKILL.md").exists())
         self.assertIn("model: opus", (target / ".claude" / "agents" / "solution-architect.md").read_text())
         self.assertEqual((target / ".gitignore").read_text().count(".agents/logs/junit/"), 1)
