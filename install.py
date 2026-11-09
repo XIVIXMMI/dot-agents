@@ -114,6 +114,7 @@ def install(target, stack=None, tools=()):
         if not (target / "CLAUDE.md").exists():
             shutil.copy2(adapter / "CLAUDE.md", target / "CLAUDE.md")
         copy_missing(adapter / "tools", target / ".claude" / "tools")
+        copy_missing(adapter / "hooks", target / ".claude" / "hooks")
         if not (target / ".claude" / "settings.json").exists():
             shutil.copy2(adapter / "settings.json", target / ".claude" / "settings.json")
         link = target / ".claude" / "skills"
