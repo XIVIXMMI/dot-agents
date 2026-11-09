@@ -14,6 +14,7 @@ HANDOFF = """Done.
 **Handoff**
 - status: done
 - files: notes.py
+- git: uncommitted
 - decisions_needed: none
 - assumptions: none
 - blockers: none

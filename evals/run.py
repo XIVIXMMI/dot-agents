@@ -26,7 +26,7 @@ sys.path.insert(0, str(EVALS.parent))
 import install  # noqa: E402
 
 HANDOFF = re.compile(
-    r"\*\*Handoff\*\*\s*\n- status: (done|blocked)\n- files: [^\n]+\n- decisions_needed: [^\n]+\n"
+    r"\*\*Handoff\*\*\s*\n- status: (done|blocked)\n- files: [^\n]+\n- git: [^\n]+\n- decisions_needed: [^\n]+\n"
     r"- assumptions: [^\n]+\n- blockers: [^\n]+\n- tests: [^\n]+"
 )
 EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿]")
