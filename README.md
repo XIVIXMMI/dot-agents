@@ -16,6 +16,7 @@ core/                 # tool- and stack-neutral: the workflow itself
 stacks/<stack>/stack.md   # commands, JUnit XML output, test naming per stack
 adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json; Codex: notes)
 install.py                # puts it all into a project; safe to rerun
+evals/                    # behavior evals: does a tool/model follow the rules? (see evals/README.md)
 tests/                    # python3 -m unittest discover tests
 ```
 

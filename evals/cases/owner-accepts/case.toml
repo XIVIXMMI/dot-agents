@@ -1,0 +1,21 @@
+# Rule: the owner's explicit decision is recorded in the decision log (log-decision skill).
+prompt = "Accept D-002."
+
+[[check]]
+name = "heading marked accepted"
+file = ".agents/docs/decision-logs.md"
+matches = 'D-002 Export notes to CSV — \[Accepted\]'
+
+[[check]]
+name = "owner decision dated"
+file = ".agents/docs/decision-logs.md"
+matches = '(?s)D-002 Export notes to CSV.*Owner decision: Accepted — 20\d\d-\d\d-\d\d'
+
+[[check]]
+name = "index row added"
+file = ".agents/docs/decision-logs.md"
+matches = '\|\s*D-002\s*\|[^\n]*Accepted'
+
+[[check]]
+name = "no code written"
+run = "git diff --quiet HEAD -- notes.py tests"

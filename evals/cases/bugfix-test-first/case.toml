@@ -1,0 +1,15 @@
+# Rule: a bug fix starts with a test that reproduces the bug, kept after the fix.
+prompt = "Bug report: word_count('buy  milk') (two spaces) returns 3. It should be 2. Fix it."
+
+[[check]]
+name = "suite passes"
+run = "python3 -m unittest -q"
+
+[[check]]
+name = "bug is fixed"
+run = '''python3 -c "from notes import word_count as w; assert w('buy  milk') == 2 and w(' a\tb ') == 2"'''
+
+[[check]]
+name = "a regression test with repeated whitespace exists"
+file = "tests/*.py"
+matches = '''word_count\(\s*["'][^"'\n]*(\s{2,}|\\t|\\n)'''
