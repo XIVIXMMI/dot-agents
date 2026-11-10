@@ -3,6 +3,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,6 +42,14 @@ class GradeTest(unittest.TestCase):
         self.assertEqual(run.grade(".", HANDOFF, run.SHARED_CHECKS), [])
         self.assertEqual(run.grade(".", HANDOFF.replace("- tests", "- test"), run.SHARED_CHECKS), ["Handoff block"])
         self.assertEqual(run.grade(".", HANDOFF + " ✅", run.SHARED_CHECKS), ["no emoji"])
+
+    def test_prompt_is_positional(self):
+        with unittest.mock.patch.object(run, "find_bin", lambda name: name):
+            for model in (None, "sonnet"):
+                self.assertEqual(run.agent_command("claude", model, "/w", "P", "/o")[-2:], ["--", "P"])
+            codex = run.agent_command("codex", None, "/w", "P", "/o")
+            self.assertEqual(codex[-1], "P")
+            self.assertNotIn("--", codex)
 
     def test_every_case_fails_on_the_untouched_fixture(self):
         # A case that passes before the agent acts measures nothing.

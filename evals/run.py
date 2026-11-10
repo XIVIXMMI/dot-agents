@@ -53,7 +53,8 @@ def agent_command(tool, model, workdir, prompt, out_file):
                "Bash(python3:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(ls:*)"]
     if model:
         cmd += ["--model" if tool == "claude" else "-m", model]
-    return cmd + [prompt]
+    # claude's --allowedTools takes many values; "--" stops it from taking the prompt too.
+    return cmd + (["--"] if tool == "claude" else []) + [prompt]
 
 
 def agent_env():
