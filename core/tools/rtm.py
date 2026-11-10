@@ -46,7 +46,7 @@ def load_requirements(spec_dir):
 
 
 def load_tests(patterns):
-    """Return [(test name, PASS|FAIL|SKIP)] from every JUnit file matching the globs."""
+    """Return [(qualified name, PASS|FAIL|SKIP, test name)] from every JUnit file matching the globs."""
     files = sorted({f for p in patterns for f in glob.glob(p, recursive=True)})
     if not files:
         raise SystemExit(f"rtm: no JUnit XML matched {patterns}; run the tests first")
@@ -57,16 +57,15 @@ def load_tests(patterns):
         except ET.ParseError as e:
             raise SystemExit(f"rtm: cannot parse {f}: {e}")
         for case in root.iter("testcase"):
-            name = case.get("name", "")
-            if case.get("classname"):
-                name = f"{case.get('classname')}.{name}"
+            bare = case.get("name", "")
+            name = f"{case.get('classname')}.{bare}" if case.get("classname") else bare
             if case.find("failure") is not None or case.find("error") is not None:
                 status = "FAIL"
             elif case.find("skipped") is not None:
                 status = "SKIP"
             else:
                 status = "PASS"
-            tests.append((name, status))
+            tests.append((name, status, bare))
     return tests
 
 
@@ -80,8 +79,8 @@ def build(reqs, tests):
     known = set(reqs)
     by_req = {r: [] for r in reqs}
     orphans = []
-    for name, status in tests:
-        hits = ids_in(name, known)
+    for name, status, bare in tests:
+        hits = ids_in(bare, known)  # the test name only: an ID in a class name would tag every method
         if not hits:
             orphans.append(name)
         for r in hits:
@@ -118,6 +117,8 @@ def gaps_markdown(rows, orphans, dups, total_tests):
         ("Failing", [f"- {r['req_id']} ({r['spec']}): {r['tests']}" for r in by["FAIL"]]),
         ("No test", [f"- {r['req_id']} ({r['spec']}): {r['requirement']}" for r in by["NO_TEST"]]),
         ("Skipped only", [f"- {r['req_id']} ({r['spec']})" for r in by["SKIP"]]),
+        ("Partly skipped", [f"- {r['req_id']} ({r['spec']}): {r['skipped']} skipped"
+                            for r in by["PASS"] if r["skipped"]]),
         ("Duplicate IDs in specs", [f"- {d}" for d in dups]),
     ]
     for title, lines in sections:
@@ -126,6 +127,12 @@ def gaps_markdown(rows, orphans, dups, total_tests):
     if len(out) == 3:
         out += ["", "No gaps."]
     return "\n".join(out) + "\n"
+
+
+def csv_cell(value):
+    """Prefix text that a spreadsheet would run as a formula."""
+    s = str(value)
+    return "'" + s if s[:1] in ("=", "+", "-", "@", "\t", "\r") else s
 
 
 def push_to_sheet(sheet_id, table):
@@ -156,6 +163,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     reqs, dups = load_requirements(args.specs)
+    if not reqs:
+        raise SystemExit(f"rtm: no '- KEY-N: text' requirement lines in {args.specs}/*.md")
     tests = load_tests(args.junit)
     rows, orphans = build(reqs, tests)
 
@@ -164,7 +173,7 @@ def main(argv=None):
     with open(out / "rtm.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=COLUMNS)
         w.writeheader()
-        w.writerows(rows)
+        w.writerows({k: csv_cell(v) for k, v in r.items()} for r in rows)
     gaps = gaps_markdown(rows, orphans, dups, len(tests))
     (out / "rtm-gaps.md").write_text(gaps, encoding="utf-8")
 

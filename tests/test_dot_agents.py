@@ -30,6 +30,8 @@ JUNIT = """<testsuites><testsuite name="s">
   <testcase classname="tests.test_notes" name="test_AUTH_30_syncs_later"/>
   <testcase classname="tests.test_notes" name="test_AUTH_4_hint"><skipped/></testcase>
   <testcase classname="tests.test_notes" name="test_helper_parses_date"/>
+  <testcase classname="tests.test_AUTH_3" name="test_helper_in_module"/>
+  <testcase classname="tests.test_notes" name="test_AUTH_30_offline_retry"><skipped/></testcase>
 </testsuite></testsuites>"""
 
 
@@ -60,10 +62,19 @@ class RtmTest(unittest.TestCase):
     def test_gaps_file(self):
         self.run_rtm()
         gaps = (self.tmp / "out" / "rtm-gaps.md").read_text()
-        self.assertIn("without a requirement ID: 1", gaps)
+        self.assertIn("without a requirement ID: 2", gaps)  # an ID in the class name does not count
+        self.assertIn("## Partly skipped\n- AUTH-30 (notes.md): 1 skipped", gaps)
         self.assertIn("## Failing\n- AUTH-2", gaps)
         self.assertIn("## No test\n- AUTH-3", gaps)
         self.assertNotIn("AUTH-1 (", gaps)
+
+    def test_csv_cells_never_start_a_formula(self):
+        self.assertEqual([rtm.csv_cell(v) for v in ("=1+1", "@x", "-2", "plain", 3)], ["'=1+1", "'@x", "'-2", "plain", "3"])
+
+    def test_no_requirements_is_an_error(self):
+        with self.assertRaises(SystemExit) as cm:
+            rtm.main(["--junit", str(self.tmp / "*.xml"), "--specs", str(self.tmp / "empty")])
+        self.assertIn("no '- KEY-N: text' requirement lines", str(cm.exception))
 
     def test_missing_junit_is_an_error(self):
         with self.assertRaises(SystemExit) as cm:
@@ -76,9 +87,19 @@ class InstallTest(unittest.TestCase):
         target = Path(tempfile.mkdtemp())
         install.install(target, "python", ["claude", "codex"])
         (target / ".agents" / "docs" / "product-brief.md").write_text("owner edit")
+        md = target / "AGENTS.md"
+        md.write_text("OWNER TOP\n" + md.read_text() + "OWNER BOTTOM\n")
+        stale = [target / ".agents" / "skills" / "old-skill" / "SKILL.md", target / ".agents" / "agents" / "old.md",
+                 target / ".claude" / "agents" / "old.md", target / ".codex" / "agents" / "old.toml"]
+        for f in stale:
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text("stale")
         install.install(target, "python", ["claude", "codex"])
+        self.assertEqual([f for f in stale if f.exists()], [])
 
-        agents_md = (target / "AGENTS.md").read_text()
+        agents_md = md.read_text()
+        self.assertTrue(agents_md.startswith("OWNER TOP\n"))
+        self.assertTrue(agents_md.endswith("OWNER BOTTOM\n"))
         self.assertEqual(agents_md.count("dot-agents:rules:start"), 1)
         self.assertIn("## Stack: Python", agents_md)
         self.assertIn("## Testing Rules", agents_md)
@@ -97,6 +118,21 @@ class InstallTest(unittest.TestCase):
             self.assertEqual(data["name"], t.stem)
             self.assertIn(data["model_reasoning_effort"], ("high", "medium"))
             self.assertIn("Handoff", data["developer_instructions"] + agents_md)
+
+    def test_render_helpers(self):
+        self.assertEqual(install.demote_headings("# A\n```\n# bash comment\n```\n## B"),
+                         "## A\n```\n# bash comment\n```\n### B")
+        meta = {"name": "x", "description": "keeps tier: fast in text", "tier": "fast"}
+        head = "name: x\ndescription: keeps tier: fast in text\ntier: fast\n"
+        self.assertEqual(install.render_claude(meta, head, "body"),
+                         "---\nname: x\ndescription: keeps tier: fast in text\nmodel: sonnet\n---\nbody")
+        bad = Path(tempfile.mkdtemp()) / "custom.md"
+        bad.write_text("no frontmatter here")
+        with self.assertRaises(SystemExit) as cm:
+            install.parse_agent(bad)
+        self.assertIn("custom.md", str(cm.exception))
+        bad.write_text("---\nname: c\n\ndescription: d\ntier: fast\n---\nbody")
+        self.assertEqual(install.parse_agent(bad)[0]["tier"], "fast")  # blank line tolerated
 
     def test_existing_claude_md_gets_import_once(self):
         target = Path(tempfile.mkdtemp())

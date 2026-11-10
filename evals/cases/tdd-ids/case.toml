@@ -1,0 +1,29 @@
+# Rule: acceptance criteria are built test-first and tests carry the requirement ID.
+prompt = "Implement NOTE-2 and NOTE-4 from .agents/specs/notes.md in notes.py."
+
+[[check]]
+name = "suite passes"
+run = "python3 -m unittest -q"
+
+[[check]]
+name = "a test name carries NOTE-2"
+file = "tests/*.py"
+matches = '(?i)def \w*NOTE_2\w*\('
+
+[[check]]
+name = "a test name carries NOTE-4"
+file = "tests/*.py"
+matches = '(?i)def \w*NOTE_4\w*\('
+
+[[check]]
+name = "behavior matches the spec"
+run = '''python3 - <<'PY'
+from notes import make_title
+assert make_title("  Groceries  ") == "Groceries"
+try:
+    make_title("   ")
+except ValueError as e:
+    assert str(e) == "Title is required"
+else:
+    raise SystemExit("blank title accepted")
+PY'''

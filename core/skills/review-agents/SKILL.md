@@ -5,7 +5,7 @@ argument-hint: [git range, default: uncommitted changes and the last commit]
 disable-model-invocation: true
 ---
 
-Review target: $ARGUMENTS. With no argument, use `git diff HEAD` plus untracked files under `.agents/`. Read only; never edit, commit, or mark a decision [Accepted]. The author of the change must not be the only reviewer, so run this in a fresh session or subagent when you can.
+Review target: $ARGUMENTS. With no argument, use `git diff HEAD` (with no commit yet: every file) plus untracked files under `.agents/` and an untracked `AGENTS.md` (`git status --porcelain`). Read only; never edit, commit, or mark a decision [Accepted]. The author of the change must not be the only reviewer, so run this in a fresh session or subagent when you can.
 
 Read the changed files and only what each check needs. Do not trust the author's summary; check against the files and tool output.
 

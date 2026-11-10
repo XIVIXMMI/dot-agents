@@ -4,8 +4,9 @@
     python3 install.py <project dir> [--stack python|java-spring|rust-tauri|swift-ios] [--tools claude,codex]
 
 Safe to rerun. Files the project owns (AGENTS.md, CLAUDE.md, rules, docs, specs, reports, logs,
-settings) are copied only when missing. Files dot-agents owns (skills, agents, tools, ci) and
-generated files (.claude/agents, .codex/agents, the rules block in AGENTS.md) are replaced.
+settings) are copied only when missing. Folders dot-agents owns (.agents/skills, agents, tools, ci) and
+generated ones (.claude/agents, .codex/agents) are wiped and rebuilt, so removed or renamed agents and
+skills do not linger; do not keep your own files there. The rules block in AGENTS.md is replaced.
 """
 import argparse
 import json
@@ -39,8 +40,11 @@ def copy_missing(src, dst):
 def parse_agent(path):
     """Split an agent file into (frontmatter dict, frontmatter lines, body)."""
     text = path.read_text(encoding="utf-8")
-    _, head, body = text.split("---\n", 2)
-    meta = dict(line.split(": ", 1) for line in head.strip().splitlines())
+    try:
+        _, head, body = text.split("---\n", 2)
+        meta = dict(line.split(": ", 1) for line in head.strip().splitlines() if line.strip())
+    except ValueError:
+        raise SystemExit(f"{path}: frontmatter must sit between '---' lines, one 'key: value' per line")
     for key in ("name", "description", "tier"):
         if key not in meta:
             raise SystemExit(f"{path}: frontmatter needs '{key}'")
@@ -50,7 +54,7 @@ def parse_agent(path):
 
 
 def render_claude(meta, head, body):
-    head = head.replace(f"tier: {meta['tier']}", f"model: {TIERS['claude'][meta['tier']]}")
+    head = re.sub(r"^tier: .*$", f"model: {TIERS['claude'][meta['tier']]}", head, count=1, flags=re.M)
     return f"---\n{head}---\n{body}"
 
 
@@ -66,11 +70,23 @@ def render_codex(meta, head, body):
     )
 
 
+def demote_headings(text):
+    """Add one '#' to every Markdown heading outside fenced code blocks."""
+    out, fenced = [], False
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        elif not fenced and re.match(r"#+ ", line):
+            line = "#" + line
+        out.append(line)
+    return "\n".join(out)
+
+
 def sync_rules_block(agents_md, rules_dir):
     parts = []
     for f in sorted(rules_dir.glob("*.md")):
         # Demote headings one level so each rule file sits under the project's own sections.
-        parts.append(re.sub(r"^(#+) ", r"#\1 ", f.read_text(encoding="utf-8").strip(), flags=re.M))
+        parts.append(demote_headings(f.read_text(encoding="utf-8").strip()))
     block = (
         "<!-- dot-agents:rules:start - generated from .agents/rules/ by install.py; edit those files and rerun -->\n"
         + "\n\n".join(parts)
@@ -93,6 +109,7 @@ def install(target, stack=None, tools=()):
     for d in PROJECT_OWNED:
         copy_missing(CORE / d, dot / d)
     for d in TOOL_OWNED:
+        shutil.rmtree(dot / d, ignore_errors=True)
         shutil.copytree(CORE / d, dot / d, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
 
     agents_md = target / "AGENTS.md"
@@ -139,12 +156,14 @@ def install(target, stack=None, tools=()):
         elif not link.is_symlink():
             print(".claude/skills is a real folder; move its skills to .agents/skills and delete it", file=sys.stderr)
         out = target / ".claude" / "agents"
-        out.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(out, ignore_errors=True)
+        out.mkdir(parents=True)
         for meta, head, body in agents:
             (out / f"{meta['name']}.md").write_text(render_claude(meta, head, body), encoding="utf-8")
     if "codex" in tools:
         out = target / ".codex" / "agents"
-        out.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(out, ignore_errors=True)
+        out.mkdir(parents=True)
         for meta, head, body in agents:
             (out / f"{meta['name']}.toml").write_text(render_codex(meta, head, body), encoding="utf-8")
 

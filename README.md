@@ -16,6 +16,7 @@ core/                 # tool- and stack-neutral: the workflow itself
 stacks/<stack>/stack.md   # commands, JUnit XML output, test naming per stack
 adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json, guard-main hook; Codex: notes)
 install.py                # puts it all into a project; safe to rerun
+evals/                    # behavior evals: does a tool/model follow the rules? (see evals/README.md)
 tests/                    # python3 -m unittest discover tests
 ```
 
@@ -31,10 +32,10 @@ The project gets:
 |---|---|---|
 | `AGENTS.md` | template + stack section + generated rules block | your text kept, rules block refreshed |
 | `.agents/rules, docs, specs, reports, logs` | project-owned | copied only if missing |
-| `.agents/skills, agents, tools, ci` | owned by dot-agents | replaced |
+| `.agents/skills, agents, tools, ci` | owned by dot-agents | wiped and rebuilt (old agents and skills removed) |
 | `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main hook | copied only if missing; an existing `CLAUDE.md` gets the `@AGENTS.md` line at the top |
 | `.claude/skills` | symlink to `.agents/skills` (a marked copy where symlinks are not allowed, e.g. Windows without Developer Mode) | kept; a copy is refreshed |
-| `.claude/agents/*.md`, `.codex/agents/*.toml` | rendered from `.agents/agents/` | replaced |
+| `.claude/agents/*.md`, `.codex/agents/*.toml` | rendered from `.agents/agents/` | wiped and rebuilt |
 
 Then fill the `<placeholders>` in `AGENTS.md` and `.agents/docs/product-brief.md`, and start a feature with the `new-feature` skill (`/new-feature` in Claude, `$new-feature` in Codex).
 
