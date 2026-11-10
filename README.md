@@ -34,7 +34,7 @@ The project gets:
 | `.agents/rules, docs, specs, reports, logs` | project-owned | copied only if missing |
 | `.agents/skills, agents, tools, ci` | owned by dot-agents | replaced |
 | `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main hook | copied only if missing; an existing `CLAUDE.md` gets the `@AGENTS.md` line at the top |
-| `.claude/skills` | symlink to `.agents/skills` | kept |
+| `.claude/skills` | symlink to `.agents/skills` (a marked copy where symlinks are not allowed, e.g. Windows without Developer Mode) | kept; a copy is refreshed |
 | `.claude/agents/*.md`, `.codex/agents/*.toml` | rendered from `.agents/agents/` | replaced |
 
 Then fill the `<placeholders>` in `AGENTS.md` and `.agents/docs/product-brief.md`, and start a feature with the `new-feature` skill (`/new-feature` in Claude, `$new-feature` in Codex).

@@ -5,4 +5,4 @@
 - `hooks/guard-main.sh`: `PreToolUse` hook that asks before anything changes the protected branch (merge, force push, push to `main`, writes while on `main`).
 - `tools/token-report.sh`: token use per session and per agent from local Claude transcripts.
 - Agents: `install.py` renders `.agents/agents/*.md` to `.claude/agents/`, mapping `tier: strong` to `opus` and `fast` to `sonnet`.
-- Skills: `.claude/skills` is a symlink to `.agents/skills`, because Claude Code reads skills only from `.claude/skills/`.
+- Skills: `.claude/skills` is a symlink to `.agents/skills`, because Claude Code reads skills only from `.claude/skills/`. Where symlinks are not allowed (Windows without Developer Mode), `install.py` copies the folder instead, marks it with `.dot-agents-copy` and refreshes it on every rerun.

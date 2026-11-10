@@ -5,6 +5,7 @@ import sys
 import tempfile
 import tomllib
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -105,6 +106,24 @@ class InstallTest(unittest.TestCase):
         self.assertTrue(text.startswith("@AGENTS.md\n"))
         self.assertEqual(text.count("@AGENTS.md"), 1)
         self.assertIn("keep me", text)
+
+    def test_skills_copied_when_symlink_fails(self):
+        target = Path(tempfile.mkdtemp())
+        with mock.patch.object(Path, "symlink_to", side_effect=OSError("no privilege")):
+            install.install(target, None, ["claude", "codex"])
+            skills = target / ".claude" / "skills"
+            self.assertFalse(skills.is_symlink())
+            self.assertTrue((skills / "new-feature" / "SKILL.md").exists())
+            self.assertTrue((target / ".codex" / "agents" / "tester.toml").exists())
+            (skills / "stale").mkdir()
+            install.install(target, None, ["claude"])
+            self.assertFalse((skills / "stale").exists())
+            self.assertTrue((skills / install.SKILLS_COPY_MARKER).exists())
+        # A folder the owner made (no marker) is never deleted.
+        own = Path(tempfile.mkdtemp())
+        (own / ".claude" / "skills" / "mine").mkdir(parents=True)
+        install.install(own, None, ["claude"])
+        self.assertTrue((own / ".claude" / "skills" / "mine").exists())
 
     def test_cli_rejects_unknown_tool(self):
         r = subprocess.run([sys.executable, str(ROOT / "install.py"), tempfile.mkdtemp(), "--tools", "cursor"],

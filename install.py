@@ -25,6 +25,7 @@ TIERS = {
 }
 BLOCK = re.compile(r"<!-- dot-agents:rules:start.*?<!-- dot-agents:rules:end -->\n?", re.S)
 CODEX_DOC_LIMIT = 32 * 1024  # Codex project_doc_max_bytes default
+SKILLS_COPY_MARKER = ".dot-agents-copy"
 
 
 def copy_missing(src, dst):
@@ -122,8 +123,19 @@ def install(target, stack=None, tools=()):
         if not (target / ".claude" / "settings.json").exists():
             shutil.copy2(adapter / "settings.json", target / ".claude" / "settings.json")
         link = target / ".claude" / "skills"
+        if not link.is_symlink() and (link / SKILLS_COPY_MARKER).exists():
+            shutil.rmtree(link)  # our own fallback copy from an earlier run: refresh it
         if not link.exists() and not link.is_symlink():
-            link.symlink_to(Path("..") / ".agents" / "skills")
+            try:
+                link.symlink_to(Path("..") / ".agents" / "skills", target_is_directory=True)
+            except OSError:
+                # Windows without Developer Mode or admin cannot create symlinks.
+                shutil.copytree(dot / "skills", link)
+                (link / SKILLS_COPY_MARKER).write_text(
+                    "Copied from .agents/skills by install.py (no symlink rights). Edit .agents/skills and rerun.\n",
+                    encoding="utf-8")
+                print("could not symlink .claude/skills; copied .agents/skills instead (rerun after skill changes)",
+                      file=sys.stderr)
         elif not link.is_symlink():
             print(".claude/skills is a real folder; move its skills to .agents/skills and delete it", file=sys.stderr)
         out = target / ".claude" / "agents"
