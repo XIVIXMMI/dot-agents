@@ -1,7 +1,7 @@
 # Decision Log — <Project>
 
 Statuses: [Proposed] · [Accepted] · [Rejected] · [Deferred] · [Superseded by D-NNN]
-Newest at the bottom. Only the owner accepts, rejects, or defers.
+Newest at the bottom. Only the owner accepts, rejects, or defers; under an owner's delegation the orchestrator may accept, marked (delegated).
 
 ## Index
 | ID | Title | Status | What it means | Full text |

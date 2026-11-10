@@ -1,12 +1,12 @@
 # Team Workflow Rules (always apply)
 
 ## Decisions
-- Status tags: [Accepted] (binding), [Proposed], [Hypothesis], [Open]. Only the owner sets [Accepted].
+- Status tags: [Accepted] (binding), [Proposed], [Hypothesis], [Open]. Only the owner sets [Accepted], or the orchestrator under an active delegation (see Delegation).
 - Build only on [Accepted] decisions. If work depends on anything else, stop and ask the owner.
 - Record lasting decisions in `.agents/docs/decision-logs.md` (use the `log-decision` skill).
 
 ## All agents (shared rules)
-- The owner decides; agents recommend with trade-offs. Agents may add only [Proposed], [Hypothesis], or [Open] items, and never mark or alter an [Accepted] one.
+- The owner decides; agents recommend with trade-offs. Agents may add only [Proposed], [Hypothesis], or [Open] items, and never mark or alter an [Accepted] one (the one exception: the orchestrator under an active delegation).
 - Never weaken, delete, or skip a failing test to get green; report it.
 - Report honestly: exact pass/fail/skip counts, assumptions made, and anything not run or not checked.
 - End every final response with a `Handoff` block, a short Markdown list. Use exactly these keys, in this order:
@@ -42,8 +42,8 @@ Commands live in `AGENTS.md`. Run the narrowest level that fits.
 - Non-code changes (optional): if `git diff --name-only <base>...HEAD` and `git status --porcelain` (staged, unstaged and untracked) together list only the paths named under Limits in `AGENTS.md` (for example `docs/` or `site/`), skip all test runs. Check again on the final commit before opening the PR. A mixed change uses the normal gates.
 
 ## Delegation (optional)
-- The owner may delegate acceptance for a batch of work, in one line, until it is finished or revoked. The orchestrator may then accept decisions inside the already [Accepted] scope, mark them "Accepted (delegated)" in the run log, and list them in its final report.
-- It still stops and asks for: a new feature or a scope change; security, privacy, network access, or a new dependency; a data-model or schema change; and anything an [Accepted] decision already covers.
+- The owner may delegate acceptance for a batch of work, in one line, until it is finished or revoked. The orchestrator may then accept decisions inside the already [Accepted] scope: lasting ones become [Accepted] in `decision-logs.md` with `Owner decision: Accepted (delegated)` (via `log-decision`), each one also goes in the run log, and all are listed in its final report so the owner can reverse them.
+- It still stops and asks for: a new feature or a scope change; security, privacy, network access, or a new dependency; a data-model or schema change; and anything an [Accepted] decision already covers. Outside the delegated scope, or after it ends or is revoked, entries stay [Proposed] for the owner.
 
 ## Parallel work and machine health
 - Child sessions, preflight, merge queue and run logs: `.agents/rules/parallel-sessions.md`.
