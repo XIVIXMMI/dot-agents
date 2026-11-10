@@ -28,6 +28,7 @@ Keep output quiet; read summaries, not raw logs.
 - Build: `<command>`
 - Test, all: `<command>`
 - Test, one suite / feature run / critical set: `<commands>`
+- JUnit XML for the RTM: `<test command that writes JUnit XML>`; glob: `<JUnit XML glob>`
 - Lint / format: `<command>`
 
 ## Limits

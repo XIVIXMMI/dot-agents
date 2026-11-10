@@ -41,7 +41,7 @@ Pick a short kebab-case feature name and use it for every file. Each agent ends 
 - If a fix in this step changes code in the review scope, `sec-perf-reviewer` checks that fix diff before the last test round.
 
 ## Finish
-Release gate: build, unit tests and the feature's related suites pass, no Critical/High finding or P0/P1 bug is open, and `rtm-gaps.md` lists no untested or failing criterion of this feature (run `rtm.py` as in `.agents/rules/testing.md`). If the gate fails, stop and ask the owner; never relax it.
+Release gate: build, unit tests and the feature's related suites pass, no Critical/High finding or P0/P1 bug is open, and `rtm-gaps.md` lists no untested or failing criterion of this feature (run `rtm.py` as in `.agents/rules/testing.md`, with the JUnit XML command and glob from Commands or the Stack section in `AGENTS.md`; if neither gives one, the gate fails). If the gate fails, stop and ask the owner; never relax it.
 
 Don't trust agent-reported facts. Use tool output: read the tester's result file when no source file is newer than it, otherwise run the feature run once yourself. Compare each `files` field with `git status` and tell the owner about any mismatch.
 
