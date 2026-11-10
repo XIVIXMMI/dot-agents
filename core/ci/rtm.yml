@@ -1,4 +1,4 @@
-# Copy to .github/workflows/rtm.yml and fill the two <...> lines from the Stack section of AGENTS.md.
+# Copy to .github/workflows/rtm.yml and fill the two <...> lines from Commands or the Stack section of AGENTS.md.
 # Setup once (private repo):
 #   1. Google Cloud: create a service account, enable the Google Sheets API, download its JSON key.
 #   2. Share the Google Sheet with the service account's email as Editor.
