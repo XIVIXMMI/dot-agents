@@ -39,7 +39,7 @@ Commands live in `AGENTS.md`. Run the narrowest level that fits.
 - Feature run (after every feature): the whole unit test target plus the UI suites of the feature just built. `tester` runs it, then the orchestrator verifies once. In fix rounds 2 and 3 rerun only the failed or touched tests; the whole feature set runs in round 1 and once more in the last round.
 - Critical set (before a merge into `main`): a short list of the most important tests, kept in `AGENTS.md` or a file it names.
 - Full suite: only before a release, or overnight when the machine is idle.
-- Non-code changes (optional): if `git diff --name-only <base>...HEAD` and `git status --porcelain` (staged, unstaged and untracked) together list only the paths named under Limits in `AGENTS.md` (for example `docs/` or `site/`), skip all test runs. Check again on the final commit before opening the PR. A mixed change uses the normal gates.
+- Non-code changes (optional): if `git diff --no-renames --name-only <base>...HEAD` (so a moved file counts at both paths) and `git status --porcelain` (staged, unstaged and untracked) together list only the paths named under Limits in `AGENTS.md` (for example `docs/` or `site/`), skip all test runs. Check again on the final commit before opening the PR. A mixed change uses the normal gates.
 
 ## Delegation (optional)
 - The owner may delegate acceptance for a batch of work, in one line, until it is finished or revoked. The orchestrator may then accept decisions inside the already [Accepted] scope: lasting ones become [Accepted] in `decision-logs.md` with `Owner decision: Accepted (delegated)` (via `log-decision`), each one also goes in the run log, and all are listed in its final report so the owner can reverse them.
