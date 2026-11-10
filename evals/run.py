@@ -29,7 +29,7 @@ HANDOFF = re.compile(
     r"\*\*Handoff\*\*\s*\n- status: (done|blocked)\n- files: [^\n]+\n- git: [^\n]+\n- decisions_needed: [^\n]+\n"
     r"- assumptions: [^\n]+\n- blockers: [^\n]+\n- tests: [^\n]+"
 )
-EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿]")
+EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\uFE0F]")  # pictographs, symbols, stars, VS16
 SHARED_CHECKS = [
     {"name": "Handoff block", "output": HANDOFF.pattern},
     {"name": "no emoji", "output_not": EMOJI.pattern},
@@ -58,14 +58,23 @@ def agent_command(tool, model, workdir, prompt, out_file):
 
 
 def agent_env():
-    """Drop variables a parent Claude session sets, so the agent CLI uses its own login."""
-    return {k: v for k, v in os.environ.items()
-            if not (k.startswith(("CLAUDE", "ANTHROPIC")) and k != "CLAUDE_CONFIG_DIR")}
+    """Drop variables a parent Claude session sets, so the agent CLI uses its own login; keep explicit credentials."""
+    keep = {"CLAUDE_CONFIG_DIR", "ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"}
+    return {k: v for k, v in os.environ.items() if k in keep or not k.startswith(("CLAUDE", "ANTHROPIC"))}
 
 
 def make_project(case_dir, tool):
     RUNS.mkdir(exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix=f"{case_dir.name}-", dir=RUNS))
+    try:
+        _fill_project(work, case_dir, tool)
+    except BaseException:
+        shutil.rmtree(work, ignore_errors=True)
+        raise
+    return work
+
+
+def _fill_project(work, case_dir, tool):
     install.install(work, None, [tool])
     shutil.copytree(EVALS / "fixture", work, dirs_exist_ok=True, ignore=shutil.ignore_patterns("AGENTS.extra.md"))
     with open(work / "AGENTS.md", "a", encoding="utf-8") as f:
@@ -76,7 +85,6 @@ def make_project(case_dir, tool):
     subprocess.run(git + ["init", "-q"], check=True)
     subprocess.run(git + ["add", "-A"], check=True)
     subprocess.run(git + ["commit", "-qm", "fixture"], check=True)
-    return work
 
 
 def grade(workdir, output, checks):
@@ -84,7 +92,10 @@ def grade(workdir, output, checks):
     failed = []
     for c in checks:
         if "run" in c:
-            ok = subprocess.run(c["run"], shell=True, cwd=workdir, capture_output=True, timeout=120).returncode == 0
+            try:
+                ok = subprocess.run(c["run"], shell=True, cwd=workdir, capture_output=True, timeout=120).returncode == 0
+            except subprocess.TimeoutExpired:
+                ok = False
         elif "output" in c:
             ok = re.search(c["output"], output) is not None
         elif "output_not" in c:
@@ -112,20 +123,37 @@ def load_case(case_dir):
     return case
 
 
+def _text(data):
+    """Captured output as text; TimeoutExpired may hold bytes or None."""
+    return data.decode("utf-8", "replace") if isinstance(data, bytes) else (data or "")
+
+
 def run_once(case_dir, tool, model, timeout):
+    """Run one case once; a setup error fails this run, not the whole batch (make_project cleans up)."""
+    try:
+        return _run_once(case_dir, tool, model, timeout)
+    except Exception as e:
+        return case_dir.name, [f"setup error: {type(e).__name__}: {e}"], None
+
+
+def _run_once(case_dir, tool, model, timeout):
     case = load_case(case_dir)
     work = make_project(case_dir, tool)
     out_file = work.parent / f"{work.name}.out.txt"
     cmd = agent_command(tool, model, work, case["prompt"], out_file)
     log_file = work.parent / f"{work.name}.log"
     try:
-        r = subprocess.run(cmd, cwd=work, capture_output=True, text=True, timeout=timeout,
+        r = subprocess.run(cmd, cwd=work, capture_output=True, text=True, errors="replace", timeout=timeout,
                            stdin=subprocess.DEVNULL, env=agent_env())
-        output = out_file.read_text(encoding="utf-8") if out_file.exists() else r.stdout
+        output = out_file.read_text(encoding="utf-8", errors="replace") if out_file.exists() else r.stdout
         log_file.write_text(f"exit {r.returncode}\n--- stdout\n{r.stdout}\n--- stderr\n{r.stderr}", encoding="utf-8")
-    except subprocess.TimeoutExpired:
-        output = ""
+    except subprocess.TimeoutExpired as e:
+        output = out_file.read_text(encoding="utf-8", errors="replace") if out_file.exists() else ""
+        log_file.write_text(f"timeout\n--- stdout\n{_text(e.stdout)}\n--- stderr\n{_text(e.stderr)}", encoding="utf-8")
         failed = ["timeout"]
+    except OSError as e:  # the agent binary could not start
+        output = ""
+        failed = [f"launch error: {e}"]
     else:
         failed = grade(work, output, SHARED_CHECKS + case["check"])
         if r.returncode != 0:
@@ -165,7 +193,7 @@ def main(argv=None):
         print(f"| {n} | {ok}/{len(mine)} | {', '.join(fails) or '-'} |")
     print(f"\nTotal: {total}/{len(results)} runs passed.")
     for n, f, work in results:
-        if f:
+        if f and work:
             print(f"kept {n}: {work} (final message: {work}.out.txt)")
     return 0 if total == len(results) else 1
 

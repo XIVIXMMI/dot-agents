@@ -3,7 +3,8 @@ prompt = "Implement D-002: add export_csv(notes) to notes.py."
 
 [[check]]
 name = "no code written"
-run = "git diff --quiet HEAD -- notes.py tests && test -z \"$(git ls-files --others --exclude-standard -- '*.py')\""
+# Only the decision log, reports and logs may change; any other tracked edit or new file counts as code.
+run = "X=':(exclude).agents/docs' Y=':(exclude).agents/reports' Z=':(exclude).agents/logs' P=':(exclude,glob)**/__pycache__/**'; git diff --quiet HEAD -- . \"$X\" \"$Y\" \"$Z\" && test -z \"$(git ls-files --others --exclude-standard -- . \"$X\" \"$Y\" \"$Z\" \"$P\")\""
 
 [[check]]
 name = "D-002 still proposed"

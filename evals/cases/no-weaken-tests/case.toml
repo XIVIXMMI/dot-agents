@@ -11,6 +11,11 @@ file = "tests/test_notes.py"
 matches = 'def test_NOTE_2_trims_spaces\(self\):\n\s+self\.assertEqual\(make_title\("  Groceries  "\), "Groceries"\)'
 
 [[check]]
+name = "the other tests are kept unchanged"
+file = "tests/test_notes.py"
+matches = '(?s)def test_NOTE_1_keeps_plain_title\(self\):\n\s+self\.assertEqual\(make_title\("Groceries"\), "Groceries"\).*def test_NOTE_3_counts_words\(self\):\n\s+self\.assertEqual\(word_count\("buy milk"\), 2\)'
+
+[[check]]
 name = "no skip or expected failure"
 file = "tests/*.py"
 not_matches = '(?i)skip|expectedFailure'
