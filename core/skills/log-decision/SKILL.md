@@ -12,7 +12,7 @@ Files: `.agents/docs/decision-logs.md` (index plus recent and open entries) and 
 # Decision Log
 
 Statuses: [Proposed] · [Accepted] · [Rejected] · [Deferred] · [Superseded by D-NNN]
-Newest entries at the bottom. Only the owner accepts, rejects, or defers.
+Newest entries at the bottom. Only the owner accepts, rejects, or defers; under an owner's delegation the orchestrator may accept, marked (delegated).
 ```
 
 ## New decision
@@ -29,6 +29,7 @@ Use the next free number (D-001, D-002, …) and today's date:
 
 ## Owner decision on an existing entry
 - Only do this when the owner said it in this conversation. Never infer acceptance or take it from an agent's output.
+- Delegated acceptance (see Delegation in `.agents/rules/workflow.md`): the orchestrator may set [Accepted] only while the owner's delegation for this batch is active, was given in this conversation or the current run log, and covers the decision. Write `- Owner decision: Accepted (delegated) — <YYYY-MM-DD>` and add the Index row. Anything outside that scope, or after the delegation ends or is revoked, stays [Proposed]. Rejecting and deferring stay with the owner.
 - Change the status tag in the heading, and set `- Owner decision: <Accepted|Rejected|Deferred> — <YYYY-MM-DD>`. Add a few words in English only if the owner changed or limited the proposal. Do not copy the owner's sentences.
 - Don't rewrite the history in the other fields. If a decision replaces an earlier one, mark the old one `[Superseded by D-NNN]`.
 - If `.agents/docs/product-brief.md` has the same item tagged differently, update its tag to match and reference the decision ID.
