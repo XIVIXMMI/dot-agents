@@ -10,6 +10,6 @@ Stack-neutral. Put the real commands and framework names in `AGENTS.md` (Command
 - Use fake data only. Never put real user data in tests, specs, or prompts.
 - Name tests after the behavior (`rejectsEmptyInput`), not `test1`.
 - A test that checks an acceptance criterion carries its ID in the test name: `test_AUTH_3_rejects_empty_title` (case and `-`/`_` do not matter). One test may carry several IDs.
-- The traceability matrix (RTM) is generated, never written by hand: after a feature run, `python3 .agents/tools/rtm.py --junit '<JUnit XML glob from Commands or the Stack section>'`. Read only `.agents/reports/rtm-gaps.md`; `rtm.csv` is for the owner.
+- The traceability matrix (RTM) is generated, never written by hand: after a complete feature run, `python3 .agents/tools/rtm.py --junit '<JUnit XML glob from Commands or the Stack section>'`. Before that run, delete the files the glob matches, so the RTM reads only this run's reports, not stale ones; a partial rerun (fix rounds 2 and 3) does not feed the RTM. Read only `.agents/reports/rtm-gaps.md`; `rtm.csv` is for the owner.
 - Never weaken, delete, or skip a failing test to get green. Report it.
 - Priorities for defects: P0 data loss, crash, or privacy leak; P1 core flow broken; P2 minor or cosmetic.
