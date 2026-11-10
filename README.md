@@ -46,10 +46,14 @@ Rules stay as files in `.agents/rules/` so you can edit them per project; rerun 
 After cloning, link the repo to a fixed path and the skills into the folders agents scan in `$HOME`, so the skills work in every project and a `git pull` updates them:
 
 ```bash
-ln -s "$PWD" ~/.dot-agents        # run inside the clone
+[ -e ~/.dot-agents ] || ln -s "$PWD" ~/.dot-agents        # run inside the clone
 mkdir -p ~/.agents/skills ~/.claude/skills
+# Link only where nothing exists yet; never replace a skill, link or folder already there.
 for s in ~/.dot-agents/core/skills/*/; do n=$(basename "$s")
-  ln -sfn "${s%/}" ~/.agents/skills/"$n"; ln -sfn "${s%/}" ~/.claude/skills/"$n"; done
+  for d in ~/.agents/skills ~/.claude/skills; do
+    if [ -e "$d/$n" ] || [ -L "$d/$n" ]; then echo "kept existing $d/$n"; else ln -s "${s%/}" "$d/$n"; fi
+  done
+done
 ```
 
 - `~/.agents/skills` is read by Codex and Kimi, `~/.claude/skills` by Claude. Do not make `~/.agents` itself the link: the skills live in `core/skills`, and the folder may hold other tools' files.
