@@ -33,7 +33,7 @@ The project gets:
 | `AGENTS.md` | template + stack section + generated rules block | your text kept, rules block refreshed |
 | `.agents/rules, docs, specs, reports, logs` | project-owned | copied only if missing |
 | `.agents/skills, agents, tools, ci` | owned by dot-agents | replaced |
-| `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main hook | copied only if missing |
+| `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main hook | copied only if missing; an existing `CLAUDE.md` gets the `@AGENTS.md` line at the top |
 | `.claude/skills` | symlink to `.agents/skills` | kept |
 | `.claude/agents/*.md`, `.codex/agents/*.toml` | rendered from `.agents/agents/` | replaced |
 

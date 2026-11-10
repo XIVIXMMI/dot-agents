@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest   # swift-ios needs macos-latest
     steps:
       - uses: actions/checkout@v4
+      # Add the stack's toolchain and dependencies here; the runner has only what ubuntu-latest ships. E.g.:
+      #   python: actions/setup-python + pip install -r requirements.txt
+      #   java-spring: actions/setup-java (temurin) ; Maven/Gradle fetch deps during the test run
+      #   rust-tauri: uses: taiki-e/install-action@nextest (cargo ships on the runner, cargo-nextest does not);
+      #     Tauri needs: sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev;
+      #     frontend: actions/setup-node + npm ci
       # Tests may fail; the RTM is still built so the sheet shows which requirements fail.
       - name: Test
         run: <test command that writes JUnit XML>

@@ -96,6 +96,16 @@ class InstallTest(unittest.TestCase):
             self.assertIn(data["model_reasoning_effort"], ("high", "medium"))
             self.assertIn("Handoff", data["developer_instructions"] + agents_md)
 
+    def test_existing_claude_md_gets_import_once(self):
+        target = Path(tempfile.mkdtemp())
+        (target / "CLAUDE.md").write_text("# Old notes\nkeep me\n")
+        install.install(target, None, ["claude"])
+        install.install(target, None, ["claude"])
+        text = (target / "CLAUDE.md").read_text()
+        self.assertTrue(text.startswith("@AGENTS.md\n"))
+        self.assertEqual(text.count("@AGENTS.md"), 1)
+        self.assertIn("keep me", text)
+
     def test_cli_rejects_unknown_tool(self):
         r = subprocess.run([sys.executable, str(ROOT / "install.py"), tempfile.mkdtemp(), "--tools", "cursor"],
                            capture_output=True, text=True)

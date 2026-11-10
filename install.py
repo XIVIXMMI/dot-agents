@@ -111,8 +111,12 @@ def install(target, stack=None, tools=()):
     if "claude" in tools:
         adapter = ROOT / "adapters" / "claude"
         (target / ".claude").mkdir(exist_ok=True)
-        if not (target / "CLAUDE.md").exists():
-            shutil.copy2(adapter / "CLAUDE.md", target / "CLAUDE.md")
+        claude_md = target / "CLAUDE.md"
+        if not claude_md.exists():
+            shutil.copy2(adapter / "CLAUDE.md", claude_md)
+        elif "@AGENTS.md" not in claude_md.read_text(encoding="utf-8").splitlines():
+            # Claude reads the rules only through this import; keep the owner's text below it.
+            claude_md.write_text("@AGENTS.md\n\n" + claude_md.read_text(encoding="utf-8"), encoding="utf-8")
         copy_missing(adapter / "tools", target / ".claude" / "tools")
         copy_missing(adapter / "hooks", target / ".claude" / "hooks")
         if not (target / ".claude" / "settings.json").exists():
