@@ -29,7 +29,9 @@ jobs:
           python-version: "3.12"
       - run: pip install gspread
       - name: RTM to Google Sheet
-        run: python3 .agents/tools/rtm.py --junit '<JUnit XML glob>' --sheet "$RTM_SHEET_ID"
+        run: |
+          if [ -z "$RTM_SHEET_ID" ]; then echo "::error::set the RTM_SHEET_ID repository variable"; exit 1; fi
+          python3 .agents/tools/rtm.py --junit '<JUnit XML glob>' --sheet "$RTM_SHEET_ID"
         env:
           RTM_SHEET_ID: ${{ vars.RTM_SHEET_ID }}
           RTM_SA_KEY_JSON: ${{ secrets.RTM_SA_KEY_JSON }}

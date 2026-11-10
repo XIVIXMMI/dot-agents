@@ -23,7 +23,7 @@ Read the decision index before proposing or building anything.
 <Folder map of the source tree, one line per folder.>
 
 ## Commands
-Defaults are in the Stack section below; override here.
+Defaults are in the Stack section below, which exists only if a stack was chosen on the first install (`--stack` on a later install does not add it). Without it, fill in every command here before agents rely on them.
 Keep output quiet; read summaries, not raw logs.
 - Build: `<command>`
 - Test, all: `<command>`

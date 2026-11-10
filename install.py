@@ -39,8 +39,11 @@ def copy_missing(src, dst):
 def parse_agent(path):
     """Split an agent file into (frontmatter dict, frontmatter lines, body)."""
     text = path.read_text(encoding="utf-8")
-    _, head, body = text.split("---\n", 2)
-    meta = dict(line.split(": ", 1) for line in head.strip().splitlines())
+    try:
+        _, head, body = text.split("---\n", 2)
+        meta = dict(line.split(": ", 1) for line in head.strip().splitlines() if line.strip())
+    except ValueError:
+        raise SystemExit(f"{path}: frontmatter must sit between '---' lines, one 'key: value' per line")
     for key in ("name", "description", "tier"):
         if key not in meta:
             raise SystemExit(f"{path}: frontmatter needs '{key}'")
@@ -50,7 +53,7 @@ def parse_agent(path):
 
 
 def render_claude(meta, head, body):
-    head = head.replace(f"tier: {meta['tier']}", f"model: {TIERS['claude'][meta['tier']]}")
+    head = re.sub(r"^tier: .*$", f"model: {TIERS['claude'][meta['tier']]}", head, count=1, flags=re.M)
     return f"---\n{head}---\n{body}"
 
 
@@ -66,11 +69,23 @@ def render_codex(meta, head, body):
     )
 
 
+def demote_headings(text):
+    """Add one '#' to every Markdown heading outside fenced code blocks."""
+    out, fenced = [], False
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        elif not fenced and re.match(r"#+ ", line):
+            line = "#" + line
+        out.append(line)
+    return "\n".join(out)
+
+
 def sync_rules_block(agents_md, rules_dir):
     parts = []
     for f in sorted(rules_dir.glob("*.md")):
         # Demote headings one level so each rule file sits under the project's own sections.
-        parts.append(re.sub(r"^(#+) ", r"#\1 ", f.read_text(encoding="utf-8").strip(), flags=re.M))
+        parts.append(demote_headings(f.read_text(encoding="utf-8").strip()))
     block = (
         "<!-- dot-agents:rules:start - generated from .agents/rules/ by install.py; edit those files and rerun -->\n"
         + "\n\n".join(parts)
