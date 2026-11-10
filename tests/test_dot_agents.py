@@ -89,7 +89,13 @@ class InstallTest(unittest.TestCase):
         (target / ".agents" / "docs" / "product-brief.md").write_text("owner edit")
         md = target / "AGENTS.md"
         md.write_text("OWNER TOP\n" + md.read_text() + "OWNER BOTTOM\n")
+        stale = [target / ".agents" / "skills" / "old-skill" / "SKILL.md", target / ".agents" / "agents" / "old.md",
+                 target / ".claude" / "agents" / "old.md", target / ".codex" / "agents" / "old.toml"]
+        for f in stale:
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text("stale")
         install.install(target, "python", ["claude", "codex"])
+        self.assertEqual([f for f in stale if f.exists()], [])
 
         agents_md = md.read_text()
         self.assertTrue(agents_md.startswith("OWNER TOP\n"))

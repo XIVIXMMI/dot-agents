@@ -4,8 +4,9 @@
     python3 install.py <project dir> [--stack python|java-spring|rust-tauri|swift-ios] [--tools claude,codex]
 
 Safe to rerun. Files the project owns (AGENTS.md, CLAUDE.md, rules, docs, specs, reports, logs,
-settings) are copied only when missing. Files dot-agents owns (skills, agents, tools, ci) and
-generated files (.claude/agents, .codex/agents, the rules block in AGENTS.md) are replaced.
+settings) are copied only when missing. Folders dot-agents owns (.agents/skills, agents, tools, ci) and
+generated ones (.claude/agents, .codex/agents) are wiped and rebuilt, so removed or renamed agents and
+skills do not linger; do not keep your own files there. The rules block in AGENTS.md is replaced.
 """
 import argparse
 import json
@@ -108,6 +109,7 @@ def install(target, stack=None, tools=()):
     for d in PROJECT_OWNED:
         copy_missing(CORE / d, dot / d)
     for d in TOOL_OWNED:
+        shutil.rmtree(dot / d, ignore_errors=True)
         shutil.copytree(CORE / d, dot / d, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
 
     agents_md = target / "AGENTS.md"
@@ -154,12 +156,14 @@ def install(target, stack=None, tools=()):
         elif not link.is_symlink():
             print(".claude/skills is a real folder; move its skills to .agents/skills and delete it", file=sys.stderr)
         out = target / ".claude" / "agents"
-        out.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(out, ignore_errors=True)
+        out.mkdir(parents=True)
         for meta, head, body in agents:
             (out / f"{meta['name']}.md").write_text(render_claude(meta, head, body), encoding="utf-8")
     if "codex" in tools:
         out = target / ".codex" / "agents"
-        out.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(out, ignore_errors=True)
+        out.mkdir(parents=True)
         for meta, head, body in agents:
             (out / f"{meta['name']}.toml").write_text(render_codex(meta, head, body), encoding="utf-8")
 
