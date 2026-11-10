@@ -41,6 +41,27 @@ Then fill the `<placeholders>` in `AGENTS.md` and `.agents/docs/product-brief.md
 
 Rules stay as files in `.agents/rules/` so you can edit them per project; rerun `install.py` to copy them into the block in `AGENTS.md`. Every tool then reads the same rules from one file.
 
+## Home setup (optional)
+
+After cloning, link the repo to a fixed path and the skills into the folders agents scan in `$HOME`, so the skills work in every project and a `git pull` updates them:
+
+```bash
+[ -e ~/.dot-agents ] || ln -s "$PWD" ~/.dot-agents        # run inside the clone
+mkdir -p ~/.agents/skills ~/.claude/skills
+# Link only where nothing exists yet; never replace a skill, link or folder already there.
+for s in ~/.dot-agents/core/skills/*/; do n=$(basename "$s")
+  for d in ~/.agents/skills ~/.claude/skills; do
+    if [ -e "$d/$n" ] || [ -L "$d/$n" ]; then echo "kept existing $d/$n"; else ln -s "${s%/}" "$d/$n"; fi
+  done
+done
+```
+
+- `~/.agents/skills` is read by Codex and Kimi, `~/.claude/skills` by Claude. Do not make `~/.agents` itself the link: the skills live in `core/skills`, and the folder may hold other tools' files.
+- Then install with `python3 ~/.dot-agents/install.py <project> ...`.
+- The links follow the branch checked out in the clone; keep it on `main`.
+- `new-feature` and `log-decision` still need a project installed with `install.py` (they read its `.agents/` files). A project installed that way also has its own copy, so the same skill shows twice.
+- Undo: `rm ~/.dot-agents ~/.agents/skills/{grilling,log-decision,new-feature,review-agents} ~/.claude/skills/{grilling,log-decision,new-feature,review-agents}`
+
 ## Traceability (RTM)
 
 Agents never write the matrix. Specs give each acceptance criterion an ID (`AUTH-3: ...`), tests carry it in their name (`test_AUTH_3_rejects_empty_title`), and `rtm.py` joins specs with JUnit XML:
