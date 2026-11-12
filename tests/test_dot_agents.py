@@ -119,6 +119,26 @@ class InstallTest(unittest.TestCase):
             self.assertIn(data["model_reasoning_effort"], ("high", "medium"))
             self.assertIn("Handoff", data["developer_instructions"] + agents_md)
 
+    def test_several_stacks_and_local_agents(self):
+        target = Path(tempfile.mkdtemp())
+        local = target / ".agents" / "agents-local"
+        local.mkdir(parents=True)
+        (local / "eval-runner.md").write_text("---\nname: eval-runner\ndescription: d\ntier: fast\n---\nlocal body\n")
+        (local / "developer.md").write_text("---\nname: developer\ndescription: d\ntier: strong\n---\nproject developer\n")
+        for _ in range(2):  # local agents survive a rerun
+            install.install(target, "python,swift-ios", ["claude", "codex"])
+        agents_md = (target / "AGENTS.md").read_text()
+        self.assertLess(agents_md.index("## Stack: Python"), agents_md.index("## Stack: Swift / iOS"))
+        self.assertIn("local body", (target / ".claude" / "agents" / "eval-runner.md").read_text())
+        developer = (target / ".claude" / "agents" / "developer.md").read_text()  # same name: local wins
+        self.assertIn("project developer", developer)
+        self.assertIn("model: opus", developer)
+        self.assertEqual(len(list((target / ".codex" / "agents").glob("*.toml"))), 7)
+        self.assertTrue((local / "eval-runner.md").exists())
+        with self.assertRaises(SystemExit) as cm:
+            install.install(Path(tempfile.mkdtemp()), "python,cobol", [])
+        self.assertIn("unknown stack 'cobol'", str(cm.exception))
+
     def test_render_helpers(self):
         self.assertEqual(install.demote_headings("# A\n```\n# bash comment\n```\n## B"),
                          "## A\n```\n# bash comment\n```\n### B")
