@@ -1,5 +1,5 @@
 ---
-name: ux-designer
+name: designer
 description: UX/UI design. Use proactively after a feature's scope is agreed and before implementation, to design user flows, screen specs, states, interactions, accessibility, and copy. Also use to review implemented screens against their spec.
 tools: Read, Grep, Glob, Edit, Write, WebSearch, WebFetch
 tier: fast
