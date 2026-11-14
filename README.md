@@ -12,6 +12,7 @@ core/                 # tool- and stack-neutral: the workflow itself
 ├── skills/           # new-feature, log-decision, grilling, review-agents
 ├── docs/ specs/ reports/ logs/   # templates the project then owns
 ├── tools/rtm.py      # requirement traceability matrix (RTM) builder
+├── tools/xcresult2junit.py  # Xcode .xcresult to JUnit XML for the RTM (swift-ios)
 └── ci/rtm.yml        # GitHub Action: tests -> RTM -> Google Sheet
 stacks/<stack>/stack.md   # commands, JUnit XML output, test naming per stack
 adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json, guard-main hook; Codex: notes)
@@ -43,7 +44,7 @@ The project gets:
 
 Then fill the `<placeholders>` in `AGENTS.md` and `.agents/docs/product-brief.md`, and start a feature with the `new-feature` skill (`/new-feature` in Claude, `$new-feature` in Codex).
 
-Rules stay as files in `.agents/rules/` so you can edit them per project; rerun `install.py` to copy them into the block in `AGENTS.md`. Every tool then reads the same rules from one file.
+Rules stay as files in `.agents/rules/` so you can edit them per project; rerun `install.py` to copy them into the block in `AGENTS.md`. Every tool then reads the same rules from one file. A project that keeps `AGENTS.md` short with its own digest of the rules runs `install.py` with `--no-rules-block`, which leaves the rules out and removes an old block.
 
 ## Home setup (optional)
 
