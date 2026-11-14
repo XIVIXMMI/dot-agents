@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Install or update dot-agents in a project.
 
-    python3 install.py <project dir> [--stack python|java-spring|rust-tauri|swift-ios[,<stack>...]] [--tools claude,codex]
+    python3 install.py <project dir> [--stack python|java-spring|rust-tauri|swift-ios[,<stack>...]] [--tools claude,codex] [--no-rules-block]
 
 Safe to rerun. Files the project owns (AGENTS.md, CLAUDE.md, rules, docs, specs, reports, logs,
 settings, .agents/agents-local) are copied only when missing or never touched. Folders dot-agents owns
 (.agents/skills, agents, tools, ci) and generated ones (.claude/agents, .codex/agents) are wiped and
 rebuilt, so removed or renamed agents and skills do not linger; do not keep your own files there. The
-project's own agents go in .agents/agents-local/. The rules block in AGENTS.md is replaced.
+project's own agents go in .agents/agents-local/. The rules block in AGENTS.md is replaced, or removed with
+--no-rules-block for a project that keeps a short AGENTS.md with its own digest of the rules.
 """
 import argparse
 import json
@@ -105,7 +106,13 @@ def sync_rules_block(agents_md, rules_dir):
         print(f"warning: AGENTS.md is {size} bytes; Codex reads only the first {CODEX_DOC_LIMIT}", file=sys.stderr)
 
 
-def install(target, stack=None, tools=()):
+def remove_rules_block(agents_md):
+    text = agents_md.read_text(encoding="utf-8")
+    if BLOCK.search(text):
+        agents_md.write_text(BLOCK.sub("", text).rstrip("\n") + "\n", encoding="utf-8")
+
+
+def install(target, stack=None, tools=(), rules_block=True):
     target = Path(target).resolve()
     dot = target / ".agents"
     for d in PROJECT_OWNED:
@@ -126,7 +133,10 @@ def install(target, stack=None, tools=()):
         agents_md.write_text(text, encoding="utf-8")
     elif stack:
         print("AGENTS.md exists; stack section not added (edit it by hand)", file=sys.stderr)
-    sync_rules_block(agents_md, dot / "rules")
+    if rules_block:
+        sync_rules_block(agents_md, dot / "rules")
+    else:
+        remove_rules_block(agents_md)
 
     # A local agent with the name of a core agent replaces it, so a project can adapt one role.
     by_name = {}
@@ -186,12 +196,14 @@ def main(argv=None):
     ap.add_argument("target")
     ap.add_argument("--stack", help="one stack, or a comma list for a project with several: python,swift-ios")
     ap.add_argument("--tools", default="", help="comma list: claude,codex")
+    ap.add_argument("--no-rules-block", action="store_true",
+                    help="do not inline .agents/rules into AGENTS.md; remove the block if present")
     args = ap.parse_args(argv)
     tools = [t for t in args.tools.split(",") if t]
     unknown = set(tools) - set(TIERS)
     if unknown:
         raise SystemExit(f"unknown tools {sorted(unknown)}; supported: {sorted(TIERS)}")
-    install(args.target, args.stack, tools)
+    install(args.target, args.stack, tools, rules_block=not args.no_rules_block)
     print(f"installed into {Path(args.target).resolve()} (tools: {', '.join(tools) or 'none'})")
 
 

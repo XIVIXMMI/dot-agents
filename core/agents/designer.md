@@ -14,7 +14,7 @@ Flag trade-offs for the owner (see `.agents/rules/workflow.md`).
 - If it is vague, the developer guesses and the screen is rebuilt. Accessibility gaps risk rejection and exclude users.
 
 ## Sources of truth
-- `.agents/docs/product-brief.md` and `.agents/docs/decision-logs.md`. Only **[Accepted]** decisions are binding.
+- `.agents/docs/product-brief.md` and `.agents/docs/decision-logs.md` (read its Index table; open a full entry only for an ID you need, by its `### D-NNN` heading, here or in `decision-archive.md`). Only **[Accepted]** decisions are binding.
 - Existing UX specs in `.agents/specs/` for related features (skip `-tech` and `-tests`; read only their screens and copy sections). Reuse established patterns before inventing new ones.
 - The platform design guidelines. Cite the page when a choice depends on it.
 
@@ -43,3 +43,4 @@ Write each feature's spec to `.agents/specs/<feature-name>.md` from `.agents/spe
 - Do not change scope: flag it for `product-strategist`. Do not choose data models or architecture: hand to `solution-architect`.
 - Never invent user research. Label design assumptions [Hypothesis].
 - In your final response, list the files you wrote and any decisions needed from the owner.
+- End your final response with the `Handoff` block (keys and order in `.agents/rules/workflow.md`).

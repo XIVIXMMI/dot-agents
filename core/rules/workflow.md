@@ -55,7 +55,7 @@ Commands live in `AGENTS.md`. Run the narrowest level that fits.
 - Product docs, decisions, owner feedback: `.agents/docs/`.
 
 ## Git
-- Agents commit, push their own branch, and open a pull request without asking. Only the owner merges into `main`; a force push, a push to `main`, a PR merge, a tag, and a hard reset ask first (Claude: `.claude/settings.json` and `.claude/hooks/guard-main.sh`; other tools have no such guard). Turn on branch protection on the Git host as the hard stop.
+- `developer` leaves its work uncommitted; after review and a green feature run the orchestrator commits, pushes the branch, and opens a pull request without asking. Only the owner merges into `main`; a force push, a push to `main`, a PR merge, a tag, and a hard reset ask first (Claude: `.claude/settings.json` and `.claude/hooks/guard-main.sh`; other tools have no such guard). Turn on branch protection on the Git host as the hard stop.
 - One feature per branch: `feature/<name>`, `fix/<name>`. Never commit while the checkout is on `main`.
 - Commit message: `<type>(<scope>): <summary>`, then an optional body (why). Types: feat, fix, docs, test, chore, refactor. Split a feature into a few logical commits rather than one.
 - Opening a PR needs a green feature run (see Test levels). The orchestrator checks each `git` Handoff line against `git status` and `git log` at Finish.
