@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Install or update dot-agents in a project.
 
-    python3 install.py <project dir> [--stack python|java-spring|rust-tauri|swift-ios] [--tools claude,codex]
+    python3 install.py <project dir> [--stack python|java-spring|rust-tauri|swift-ios[,<stack>...]] [--tools claude,codex]
 
 Safe to rerun. Files the project owns (AGENTS.md, CLAUDE.md, rules, docs, specs, reports, logs,
-settings) are copied only when missing. Folders dot-agents owns (.agents/skills, agents, tools, ci) and
-generated ones (.claude/agents, .codex/agents) are wiped and rebuilt, so removed or renamed agents and
-skills do not linger; do not keep your own files there. The rules block in AGENTS.md is replaced.
+settings, .agents/agents-local) are copied only when missing or never touched. Folders dot-agents owns
+(.agents/skills, agents, tools, ci) and generated ones (.claude/agents, .codex/agents) are wiped and
+rebuilt, so removed or renamed agents and skills do not linger; do not keep your own files there. The
+project's own agents go in .agents/agents-local/. The rules block in AGENTS.md is replaced.
 """
 import argparse
 import json
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parent
 CORE = ROOT / "core"
 PROJECT_OWNED = ["rules", "docs", "specs", "reports", "logs"]
 TOOL_OWNED = ["skills", "agents", "tools", "ci"]
+LOCAL_AGENTS = "agents-local"  # project-owned agents: never wiped, rendered next to the core ones
 # Agent tier -> what each tool calls it. Codex keeps the session's model and changes reasoning effort.
 TIERS = {
     "claude": {"strong": "opus", "fast": "sonnet"},
@@ -115,17 +117,23 @@ def install(target, stack=None, tools=()):
     agents_md = target / "AGENTS.md"
     if not agents_md.exists():
         text = (CORE / "AGENTS.md").read_text(encoding="utf-8")
-        if stack:
-            stack_file = ROOT / "stacks" / stack / "stack.md"
+        # A project with several stacks (e.g. a Python tool next to an iOS app) gets one section per stack.
+        for name in [s for s in (stack or "").split(",") if s]:
+            stack_file = ROOT / "stacks" / name / "stack.md"
             if not stack_file.exists():
-                raise SystemExit(f"unknown stack '{stack}'; see {ROOT / 'stacks'}")
+                raise SystemExit(f"unknown stack '{name}'; see {ROOT / 'stacks'}")
             text = text.rstrip("\n") + "\n\n" + stack_file.read_text(encoding="utf-8")
         agents_md.write_text(text, encoding="utf-8")
     elif stack:
         print("AGENTS.md exists; stack section not added (edit it by hand)", file=sys.stderr)
     sync_rules_block(agents_md, dot / "rules")
 
-    agents = [parse_agent(p) for p in sorted((dot / "agents").glob("*.md"))]
+    # A local agent with the name of a core agent replaces it, so a project can adapt one role.
+    by_name = {}
+    for p in sorted((dot / "agents").glob("*.md")) + sorted((dot / LOCAL_AGENTS).glob("*.md")):
+        parsed = parse_agent(p)
+        by_name[parsed[0]["name"]] = parsed
+    agents = [by_name[n] for n in sorted(by_name)]
     if "claude" in tools:
         adapter = ROOT / "adapters" / "claude"
         (target / ".claude").mkdir(exist_ok=True)
@@ -176,7 +184,7 @@ def install(target, stack=None, tools=()):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("target")
-    ap.add_argument("--stack")
+    ap.add_argument("--stack", help="one stack, or a comma list for a project with several: python,swift-ios")
     ap.add_argument("--tools", default="", help="comma list: claude,codex")
     args = ap.parse_args(argv)
     tools = [t for t in args.tools.split(",") if t]
