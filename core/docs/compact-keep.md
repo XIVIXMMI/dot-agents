@@ -4,7 +4,7 @@ If anything below is missing from your summary, restore it. Details live in file
 
 ## Owner rules
 - Reply language and tone: see AGENTS.md (Owner). The owner decides; every proposal states trade-offs.
-- Agents commit, push their branch, and open PRs; only the owner merges into main. Commit format `<type>(<scope>): <summary>`. No emoji anywhere.
+- `developer` leaves work uncommitted; the orchestrator commits after review and the feature run, pushes, and opens PRs; only the owner merges. Commit format `<type>(<scope>): <summary>`. No emoji anywhere.
 - End every agent response with the `Handoff` block (.agents/rules/workflow.md).
 - Never weaken a failing test; ask the owner.
 - Save tokens: quiet command output, narrow test runs, no re-reading loaded files (.agents/rules/communication.md).

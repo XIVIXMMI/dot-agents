@@ -119,6 +119,20 @@ class InstallTest(unittest.TestCase):
             self.assertIn(data["model_reasoning_effort"], ("high", "medium"))
             self.assertIn("Handoff", data["developer_instructions"] + agents_md)
 
+    def test_no_rules_block_removes_it_and_keeps_owner_text(self):
+        target = Path(tempfile.mkdtemp())
+        install.install(target, "python", [])
+        md = target / "AGENTS.md"
+        self.assertEqual(md.read_text().count("dot-agents:rules:start"), 1)
+        md.write_text("OWNER TOP\n" + md.read_text() + "OWNER BOTTOM\n")
+        install.install(target, "python", [], rules_block=False)
+        text = md.read_text()
+        self.assertNotIn("dot-agents:rules", text)
+        self.assertTrue(text.startswith("OWNER TOP\n"))
+        self.assertIn("OWNER BOTTOM", text)
+        install.main([str(target), "--no-rules-block"])
+        self.assertEqual(md.read_text(), text)
+
     def test_several_stacks_and_local_agents(self):
         target = Path(tempfile.mkdtemp())
         local = target / ".agents" / "agents-local"

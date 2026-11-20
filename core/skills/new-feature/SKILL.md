@@ -24,12 +24,12 @@ Pick a short kebab-case feature name and use it for every file. Each agent ends 
 - Needed when data models, persistence, structure, frameworks, permissions, or dependencies change. Otherwise say it was skipped and why.
 - Output: `.agents/specs/<name>-tech.md`. Lasting choices need owner acceptance, as in step 1.
 
-## 4. Test design first - `tester` (only for pure logic)
+## 4. Test design first - `tester` (only for pure logic; skipped when the Token budget in `.agents/rules/workflow.md` says so)
 - Write a short case list (happy paths and basic cases) in `.agents/specs/<name>-tests.md`, ordered simple to complex, each traced to an acceptance criterion. No test code and no UI tests yet. Skip if the feature has no pure logic, and say so.
 
 ## 5. Build - `developer`
-- Give it the spec paths and the case list. Pure logic: one group of cases per TDD loop (Red, Green, Refactor). Other code is built normally.
-- It writes `.agents/reports/<name>-dev-report.md` with the unit-test result. The full suite runs in step 6.
+- Give it the spec paths (and the case list, if step 4 ran). Pure logic: one group of cases per TDD loop (Red, Green, Refactor). Other code is built normally.
+- It writes `.agents/reports/<name>-dev-report.md` with the unit-test result and leaves the code uncommitted; the orchestrator commits at Finish. The feature run is in step 7.
 
 ## 6. Review - `code-reviewer` (when the change touches data, auth, notifications, export, logging, permissions, or startup)
 - Runs right after `developer` and before `tester`: it is fast, and a High finding changes the code the tests would run on. Give it the spec paths and the diff only, not `developer`'s report.
@@ -45,7 +45,7 @@ Release gate: build, unit tests and the feature's related suites pass, no Critic
 
 Don't trust agent-reported facts. Use tool output: read the tester's result file when no source file is newer than it, otherwise run the feature run once yourself. Compare each `files` field with `git status` and tell the owner about any mismatch.
 
-Before a merge into `main`, run the critical set. For several features at once, use `.agents/rules/parallel-sessions.md`.
+Before a merge into `main`, run the critical set (Test levels in `.agents/rules/workflow.md`). For several features at once, follow `.agents/rules/parallel-sessions.md`.
 
 Open a pull request for the branch; the owner merges.
 

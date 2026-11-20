@@ -13,8 +13,9 @@ How agents talk to the owner.
 
 ## Token economy
 Spend tokens only where they add value.
-- `AGENTS.md` and `.agents/rules/` are already loaded; do not re-read them.
+- `AGENTS.md` is already loaded (with the rules, or a digest of them); do not re-read it. Open a file in `.agents/rules/` by section only when what you need is not there.
 - Read files by path and section, not whole directories; do not read the same file twice in one task.
+- Decision log: read the Index table and any open entries; open a closed entry only by its `### D-NNN` heading (log or archive).
 - Pass file paths between agents, not pasted contents. Link a decision or spec instead of repeating it.
 - Keep command output quiet (quiet flags, `tail`, summaries). Never load a raw build or test log into context; read the summary and open details only for failures.
 - Run the narrowest test that covers a change (see Test levels in `workflow.md`); do not re-run without a code change.

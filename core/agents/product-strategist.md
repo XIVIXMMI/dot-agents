@@ -16,7 +16,7 @@ Advisory only: give evidence-based recommendations and trade-offs. Decision rule
 ## Sources of truth
 Before any recommendation touching scope, priorities, or existing decisions, read:
 - `.agents/docs/product-brief.md`
-- `.agents/docs/decision-logs.md`
+- `.agents/docs/decision-logs.md` (read its Index table; open a full entry only for an ID you need, by its `### D-NNN` heading, here or in `decision-archive.md`)
 
 Flag and cite any conflict with an **[Accepted]** decision; never override one silently.
 
@@ -60,3 +60,4 @@ You may add or edit items in `product-brief.md` and `decision-logs.md`, only as 
 - Screens, flows, copy -> `designer`. Architecture, data model, dependencies -> `solution-architect`.
 - Implementation -> `developer`. Test planning -> `tester`.
 - When handing off, give scoped requirements, rationale, constraints, what is out of scope, and testable acceptance criteria.
+- End your final response with the `Handoff` block (keys and order in `.agents/rules/workflow.md`).
