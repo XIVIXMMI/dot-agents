@@ -24,6 +24,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 REQ_LINE = re.compile(r"^\s*[-*]\s*([A-Z][A-Z0-9]{1,9}-\d{1,4})\s*:\s*(.+?)\s*$")
+LOOSE_REQ_LINE = re.compile(r"^\s*[-*]\s*([A-Z][A-Z0-9]{1,9}-\d{1,4})(?!\d)")
 ID_IN_NAME = re.compile(r"(?<![A-Za-z0-9])([A-Za-z][A-Za-z0-9]{1,9})[-_](\d{1,4})(?!\d)")
 COLUMNS = ["req_id", "requirement", "spec", "status", "passed", "failed", "skipped", "tests", "last_run"]
 
@@ -43,6 +44,25 @@ def load_requirements(spec_dir):
             else:
                 reqs[m[1]] = (m[2], path.name)
     return reqs, dups
+
+
+def find_unread(spec_dir, reqs):
+    """Lines that start like a requirement but were not read, for example `- KEY-3 (D-2): text`.
+
+    Only IDs that are not requirements anywhere and whose prefix the same spec uses for read
+    requirements, so notes about known IDs or about other prefixes (`BUG-001`) stay quiet.
+    Returns [(spec file, line number, id)].
+    """
+    unread = []
+    for path in sorted(Path(spec_dir).glob("*.md")):
+        if path.name.startswith("_template"):
+            continue
+        prefixes = {rid.split("-")[0] for rid, (_, spec) in reqs.items() if spec == path.name}
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            m = LOOSE_REQ_LINE.match(line)
+            if m and not REQ_LINE.match(line) and m[1] not in reqs and m[1].split("-")[0] in prefixes:
+                unread.append((path.name, number, m[1]))
+    return unread
 
 
 def load_tests(patterns):
@@ -107,7 +127,7 @@ def build(reqs, tests):
     return rows, orphans
 
 
-def gaps_markdown(rows, orphans, dups, total_tests):
+def gaps_markdown(rows, orphans, dups, total_tests, unread=()):
     by = {s: [r for r in rows if r["status"] == s] for s in ("PASS", "FAIL", "NO_TEST", "SKIP")}
     out = [f"# RTM gaps - {rows[0]['last_run'] if rows else 'no requirements'}", "",
            f"Requirements: {len(rows)} (PASS {len(by['PASS'])}, FAIL {len(by['FAIL'])}, "
@@ -120,6 +140,8 @@ def gaps_markdown(rows, orphans, dups, total_tests):
         ("Partly skipped", [f"- {r['req_id']} ({r['spec']}): {r['skipped']} skipped"
                             for r in by["PASS"] if r["skipped"]]),
         ("Duplicate IDs in specs", [f"- {d}" for d in dups]),
+        ("Requirement-like lines not read", [f"- {rid} ({spec}:{n}): write it as `- {rid}: text`"
+                                             for spec, n, rid in unread]),
     ]
     for title, lines in sections:
         if lines:
@@ -167,6 +189,7 @@ def main(argv=None):
         raise SystemExit(f"rtm: no '- KEY-N: text' requirement lines in {args.specs}/*.md")
     tests = load_tests(args.junit)
     rows, orphans = build(reqs, tests)
+    unread = find_unread(args.specs, reqs)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -174,12 +197,15 @@ def main(argv=None):
         w = csv.DictWriter(f, fieldnames=COLUMNS)
         w.writeheader()
         w.writerows({k: csv_cell(v) for k, v in r.items()} for r in rows)
-    gaps = gaps_markdown(rows, orphans, dups, len(tests))
+    gaps = gaps_markdown(rows, orphans, dups, len(tests), unread)
     (out / "rtm-gaps.md").write_text(gaps, encoding="utf-8")
 
     if args.sheet:
         push_to_sheet(args.sheet, [COLUMNS] + [[str(r[c]) for c in COLUMNS] for r in rows])
     print(gaps.splitlines()[2])
+    if unread:
+        print(f"rtm: WARNING {len(unread)} requirement-like line(s) not read, see rtm-gaps.md: "
+              + ", ".join(f"{rid} ({spec}:{n})" for spec, n, rid in unread))
     return 0
 
 

@@ -14,7 +14,7 @@ You propose; the owner accepts (see `.agents/rules/workflow.md`).
 - If it is wrong, the data model or a migration can lose or leak data, and fixing it later means a costly rewrite.
 
 ## Sources of truth
-- `.agents/docs/product-brief.md`, `.agents/docs/decision-logs.md`. Only **[Accepted]** decisions are binding.
+- `.agents/docs/product-brief.md`, `.agents/docs/decision-logs.md` (read its Index table; open a full entry only for an ID you need, by its `### D-NNN` heading, here or in `decision-archive.md`). Only **[Accepted]** decisions are binding.
 - The UX spec for the feature in `.agents/specs/`, if one exists, and `.agents/specs/architecture.md` once it exists.
 - The current code. Read it before proposing changes and design for what exists.
 
@@ -42,3 +42,4 @@ You propose; the owner accepts (see `.agents/rules/workflow.md`).
 - Do not write production code; hand implementation to `developer`. Small API snippets are fine.
 - Use Bash only for read-only inspection. Do not modify the project.
 - In your final response, list the files you wrote and the decisions needed from the owner.
+- End your final response with the `Handoff` block (keys and order in `.agents/rules/workflow.md`).

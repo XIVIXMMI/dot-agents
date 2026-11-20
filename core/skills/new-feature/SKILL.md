@@ -16,7 +16,7 @@ Pick a short kebab-case feature name and use it for every file. Each agent ends 
 - Otherwise ask it to evaluate the feature against the brief and decision log and write a [Proposed] decision entry.
 - **Stop and show the owner** the recommendation and the decision needed. Continue only after the owner explicitly accepts it, then mark the entry [Accepted] with `log-decision`. If rejected or deferred, record that and end here.
 
-## 2. UX - `ux-designer`
+## 2. UX - `designer`
 - Pass the accepted decision. Output: `.agents/specs/<name>.md`.
 - Show the owner the flow, the step count, and open questions. Resolve them before continuing.
 
@@ -24,28 +24,28 @@ Pick a short kebab-case feature name and use it for every file. Each agent ends 
 - Needed when data models, persistence, structure, frameworks, permissions, or dependencies change. Otherwise say it was skipped and why.
 - Output: `.agents/specs/<name>-tech.md`. Lasting choices need owner acceptance, as in step 1.
 
-## 4. Test design first - `tester` (only for pure logic)
+## 4. Test design first - `tester` (only for pure logic; skipped when the Token budget in `.agents/rules/workflow.md` says so)
 - Write a short case list (happy paths and basic cases) in `.agents/specs/<name>-tests.md`, ordered simple to complex, each traced to an acceptance criterion. No test code and no UI tests yet. Skip if the feature has no pure logic, and say so.
 
 ## 5. Build - `developer`
-- Give it the spec paths and the case list. Pure logic: one group of cases per TDD loop (Red, Green, Refactor). Other code is built normally.
-- It writes `.agents/reports/<name>-dev-report.md` with the unit-test result. The full suite runs in step 6.
+- Give it the spec paths (and the case list, if step 4 ran). Pure logic: one group of cases per TDD loop (Red, Green, Refactor). Other code is built normally.
+- It writes `.agents/reports/<name>-dev-report.md` with the unit-test result and leaves the code uncommitted; the orchestrator commits at Finish. The feature run is in step 7.
 
-## 6. Review - `sec-perf-reviewer` (when the change touches data, auth, notifications, export, logging, permissions, or startup)
+## 6. Review - `code-reviewer` (when the change touches data, auth, notifications, export, logging, permissions, or startup)
 - Runs right after `developer` and before `tester`: it is fast, and a High finding changes the code the tests would run on. Give it the spec paths and the diff only, not `developer`'s report.
 - Send Critical/High findings to `developer` at once; the reviewer then checks the fix diff only, until nothing Critical/High is open (at most 3 rounds, counted apart from test rounds; then stop and ask the owner). Only then start step 7.
 
 ## 7. Test - `tester`
 - Check the tests against the specs, write the deferred and missing edge cases and UI/end-to-end tests, run the feature run (see Test levels in `.agents/rules/workflow.md`), and write `.agents/reports/<name>-test-report.md`.
 - Send P0/P1 bugs back to `developer` and repeat steps 5 and 7 (at most 3 rounds). Round 1 runs the whole feature set; rounds 2 and 3 rerun only failed or touched tests; the last round runs the whole set once more.
-- If a fix in this step changes code in the review scope, `sec-perf-reviewer` checks that fix diff before the last test round.
+- If a fix in this step changes code in the review scope, `code-reviewer` checks that fix diff before the last test round.
 
 ## Finish
 Release gate: build, unit tests and the feature's related suites pass, no Critical/High finding or P0/P1 bug is open, every acceptance criterion in the feature spec is a `- KEY-N: text` line (`rtm.py` sees no other), and `rtm-gaps.md` lists no untested, failing or partly skipped criterion of this feature (run `rtm.py` on a complete feature run, after clearing old reports, as in `.agents/rules/testing.md`, with the JUnit XML command and glob from Commands or the Stack section in `AGENTS.md`; if neither gives one, the gate fails). If the gate fails, stop and ask the owner; never relax it.
 
 Don't trust agent-reported facts. Use tool output: read the tester's result file when no source file is newer than it, otherwise run the feature run once yourself. Compare each `files` field with `git status` and tell the owner about any mismatch.
 
-Before a merge into `main`, run the critical set. For several features at once, use `.agents/rules/parallel-sessions.md`.
+Before a merge into `main`, run the critical set (Test levels in `.agents/rules/workflow.md`). For several features at once, follow `.agents/rules/parallel-sessions.md`.
 
 Open a pull request for the branch; the owner merges.
 

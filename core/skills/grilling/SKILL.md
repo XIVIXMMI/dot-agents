@@ -11,7 +11,7 @@ Adapted from Matt Pocock's `grilling` skill (MIT, see `THIRD-PARTY-NOTICES.md`).
 Interview the owner  until you reach a shared understanding. Map the topic as a **design tree**: every decision branches into the decisions that hang off it.
 
 ## Before the first round
-- Read `.agents/docs/product-brief.md` and `.agents/docs/decision-logs.md`.
+- Read `.agents/docs/product-brief.md` and `.agents/docs/decision-logs.md` (read its Index table; open a full entry only for an ID you need, by its `### D-NNN` heading, here or in `decision-archive.md`).
 - **[Accepted] decisions are settled.** Treat them as the trunk of the tree, not as questions. Only reopen one if the owner asks, or if the topic directly contradicts it; then say which decision and why.
 - [Proposed], [Hypothesis], and [Open] items that the topic depends on are fair game: put them on the frontier.
 
