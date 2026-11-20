@@ -14,7 +14,7 @@ core/                 # tool- and stack-neutral: the workflow itself
 ├── tools/rtm.py      # requirement traceability matrix (RTM) builder
 └── ci/rtm.yml        # GitHub Action: tests -> RTM -> Google Sheet
 stacks/<stack>/stack.md   # commands, JUnit XML output, test naming per stack
-adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json, guard-main hook; Codex: notes)
+adapters/<tool>/          # only what one tool needs (Claude: CLAUDE.md, settings.json, guard-main and stop-check hooks; Codex: notes)
 install.py                # puts it all into a project; safe to rerun
 evals/                    # behavior evals: does a tool/model follow the rules? (see evals/README.md)
 tests/                    # python3 -m unittest discover tests
@@ -34,14 +34,14 @@ The project gets:
 | `.agents/rules, docs, specs, reports, logs` | project-owned | copied only if missing |
 | `.agents/agents-local` | your own agents (optional, you create it) | never touched |
 | `.agents/skills, agents, tools, ci` | owned by dot-agents | wiped and rebuilt (old agents and skills removed) |
-| `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main hook | copied only if missing; an existing `CLAUDE.md` gets the `@AGENTS.md` line at the top |
+| `CLAUDE.md`, `.claude/settings.json`, `.claude/hooks/` | `@AGENTS.md` + Claude notes, permissions, guard-main and stop-check hooks | copied only if missing; an existing `CLAUDE.md` gets the `@AGENTS.md` line at the top |
 | `.claude/skills` | symlink to `.agents/skills` (a marked copy where symlinks are not allowed, e.g. Windows without Developer Mode) | kept; a copy is refreshed |
 | `.claude/agents/*.md`, `.codex/agents/*.toml` | rendered from `.agents/agents/` | wiped and rebuilt |
 
 - Several stacks in one project (a monorepo): `--stack python,swift-ios` adds one Stack section per name; then put the folder in front of each command by hand (`cd ios && ...`).
 - Your own agents: put `<name>.md` (same frontmatter as `core/agents/`) in `.agents/agents-local/`. `install.py` never wipes that folder and renders its agents next to the core ones on every run; a local agent with the name of a core agent replaces it.
 
-Then fill the `<placeholders>` in `AGENTS.md` and `.agents/docs/product-brief.md`, and start a feature with the `new-feature` skill (`/new-feature` in Claude, `$new-feature` in Codex).
+Then fill the `<placeholders>` in `AGENTS.md` and `.agents/docs/product-brief.md`, set `CHECK_CMD` and `CODE_PATHS` in `.claude/hooks/stop-check.py` (Claude), and start a feature with the `new-feature` skill (`/new-feature` in Claude, `$new-feature` in Codex).
 
 Rules stay as files in `.agents/rules/` so you can edit them per project; rerun `install.py` to copy them into the block in `AGENTS.md`. Every tool then reads the same rules from one file.
 

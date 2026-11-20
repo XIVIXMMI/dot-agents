@@ -1,5 +1,7 @@
-"""Tests for install.py and core/tools/rtm.py. Run: python3 -m unittest discover tests"""
+"""Tests for install.py, core/tools/rtm.py and the Claude stop-check hook. Run: python3 -m unittest discover tests"""
 import csv
+import importlib.util
+import json
 import subprocess
 import sys
 import tempfile
@@ -82,6 +84,63 @@ class RtmTest(unittest.TestCase):
         self.assertIn("no JUnit XML matched", str(cm.exception))
 
 
+def load_stop_check():
+    path = ROOT / "adapters" / "claude" / "hooks" / "stop-check.py"
+    spec = importlib.util.spec_from_file_location("stop_check", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class StopCheckTest(unittest.TestCase):
+    def setUp(self):
+        self.repo = Path(tempfile.mkdtemp())
+        subprocess.run(["git", "init", "-q", str(self.repo)], check=True)
+        (self.repo / "docs").mkdir()
+        (self.repo / "docs" / "a.md").write_text("doc")
+        self.hook = load_stop_check()
+        self.hook.CODE_PATHS = ["src"]
+        self.hook.CHECK_CMD = "true"
+        self.raw = json.dumps({"cwd": str(self.repo)})
+        patcher = mock.patch.dict("os.environ", {"CLAUDE_PROJECT_DIR": str(self.repo)})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def write_code(self, text="x = 1"):
+        (self.repo / "src").mkdir(exist_ok=True)
+        (self.repo / "src" / "app.py").write_text(text)
+
+    def test_off_without_command_or_code(self):
+        self.assertIsNone(self.hook.decide(self.raw))  # no files under src yet: docs-only edits are free
+        self.write_code()
+        self.hook.CHECK_CMD = ""
+        self.assertIsNone(self.hook.decide(self.raw))
+
+    def test_pass_reminds_once_and_commit_does_not_rerun(self):
+        self.write_code()
+        out = self.hook.decide(self.raw)
+        self.assertEqual(out["decision"], "block")
+        self.assertIn("sec-perf-reviewer", out["reason"])
+        self.assertIsNone(self.hook.decide(self.raw))
+        git = ["git", "-C", str(self.repo), "-c", "user.name=t", "-c", "user.email=t@t"]
+        subprocess.run(git + ["add", "-A"], check=True)
+        subprocess.run(git + ["commit", "-qm", "c"], check=True)
+        self.assertIsNone(self.hook.decide(self.raw))
+        self.write_code("x = 2")
+        self.assertEqual(self.hook.decide(self.raw)["decision"], "block")
+
+    def test_failure_blocks_then_gives_up(self):
+        self.write_code()
+        self.hook.CHECK_CMD = "echo boom; exit 1"
+        for n in range(1, self.hook.MAX_BLOCKS + 1):
+            out = self.hook.decide(self.raw)
+            self.assertEqual(out["decision"], "block")
+            self.assertIn(f"try {n}/", out["reason"])
+            self.assertIn("boom", out["reason"])
+        self.assertIn("systemMessage", self.hook.decide(self.raw))
+        self.assertEqual(self.hook.decide(self.raw)["decision"], "block")  # counter reset after giving up
+
+
 class InstallTest(unittest.TestCase):
     def test_install_twice(self):
         target = Path(tempfile.mkdtemp())
@@ -107,6 +166,8 @@ class InstallTest(unittest.TestCase):
         skills = target / ".claude" / "skills"  # a marked copy where symlinks are not allowed
         self.assertTrue(skills.is_symlink() or (skills / install.SKILLS_COPY_MARKER).exists())
         self.assertTrue((target / ".claude" / "hooks" / "guard-main.sh").exists())
+        self.assertTrue((target / ".claude" / "hooks" / "stop-check.py").exists())
+        self.assertIn("stop-check.py", (target / ".claude" / "settings.json").read_text())
         self.assertTrue((target / ".claude" / "skills" / "new-feature" / "SKILL.md").exists())
         self.assertIn("model: opus", (target / ".claude" / "agents" / "solution-architect.md").read_text())
         self.assertEqual((target / ".gitignore").read_text().count(".agents/logs/junit/"), 1)
